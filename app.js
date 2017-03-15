@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
+var database = require("./PozbeeBE.data/database");
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -22,8 +24,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+require("./PozbeeBE.auth/auth");
+var oauth2 = require("./PozbeeBE.auth/oauth2");
+app.use('/api/oauth/token', oauth2.token);
+
 app.use('/', index);
 app.use('/users', users);
+//
+
+var controllers = require("./PozbeeBE.controllers");
+controllers.init(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
