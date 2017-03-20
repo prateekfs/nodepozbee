@@ -8,6 +8,9 @@
         userId: {
             type: String
         },
+        socialUserId : {
+            type : Schema.Types.ObjectId
+        },
         clientId: {
             type: String,
             required: true
@@ -34,9 +37,6 @@
         isCustomer : {
             type : Boolean,
             default : false
-        },
-        socialUserAccountId : {
-            type : Schema.Types.ObjectId
         }
     },{collection : "accessToken"});
 

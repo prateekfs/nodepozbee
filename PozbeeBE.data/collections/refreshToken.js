@@ -4,8 +4,10 @@
 
         refreshTokenSchema = new Schema({
             userId: {
-                type: String,
-                required: true
+                type: String
+            },
+            socialUserId : {
+                type : String
             },
             clientId: {
                 type: String,

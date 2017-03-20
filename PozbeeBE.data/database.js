@@ -13,4 +13,5 @@
     database.PhoneActivation = require("./collections/phoneActivation").Model;
     database.User = require("./collections/user").Model;
     database.Device = require("./collections/device").Model;
+    database.SocialUser = require("./collections/socialUser").Model;
 })(module.exports);

@@ -64,7 +64,7 @@
                     return done(null, false);
                 }
 
-                if(token.userId && Math.round((Date.now()-token.created)/1000) > config.get('security:tokenLife') ) {
+                if(token.userId && Math.round((Date.now()-token.created)/1000) > 50 ) {
 
                     AccessToken.remove({ token: accessToken }, function (err) {
                         if (err) {

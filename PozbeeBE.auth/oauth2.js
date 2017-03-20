@@ -82,7 +82,7 @@
             }
             var phoneNumber = params.phoneNumber;
             var activationCode = params.activationCode;
-            User.findOne({phoneNumber : phoneNumber}).populate("phoneActivation").exec(function(err,user){
+            User.findOne({phoneNumber : phoneNumber}).populate("phoneActivation").populate("socialUser").exec(function(err,user){
                 if (err) {
                     var err = new oauth2orize.TokenError(
                         'Invalid scope: you provided an empty set of scopes',
@@ -128,7 +128,7 @@
                 if (!user) { return done(null, false); }
 
                 var model = {
-                    userId: user.userId,
+                    userId: user._id,
                     clientId: params.client.clientId,
                     deviceId : params.deviceId,
                     deviceModel : params.deviceModel

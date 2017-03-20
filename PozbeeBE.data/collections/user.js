@@ -29,7 +29,8 @@
             },
             phoneNumber : {
                 type : String,
-                required : true
+                required : true,
+                unique : true
             },
             phoneActivation : {
                 type : Schema.Types.ObjectId,
@@ -38,6 +39,10 @@
             },
             updated : {
                 type : Date
+            },
+            socialUser : {
+                type : Schema.Types.ObjectId,
+                ref : "SocialUser"
             }
         },{collection : "user"});
     userSchema.pre("validate", function(next){

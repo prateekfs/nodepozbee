@@ -27,11 +27,8 @@
             },
             activeUserId : {
                 type : Schema.Types.ObjectId,
-                required : false
-            },
-            activeSocialUserAccountId : {
-                type : Schema.Types.ObjectId,
-                required : false
+                required : false,
+                ref : "User"
             }
         },{collection : "device"});
         deviceSchema.pre("validate", function(next){
