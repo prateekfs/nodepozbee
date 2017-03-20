@@ -2,7 +2,7 @@
     var mongoose = require("mongoose");
     var db = mongoose.connection;
     var config = require("../config");
-    mongoose.connect(config.get("mongoose:uri"));
+    mongoose.connect(config.get("mongodb://pozbeeAdmin:1q2w3eCa!@138.68.23.202:15123/pozbee"));
     db.once("open",function(err){
 
     });
