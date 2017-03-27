@@ -2,7 +2,7 @@
     var mongoose = require("mongoose");
     var db = mongoose.connection;
     var config = require("../config");
-    mongoose.connect(config.get("mongodb://pozbeeAdmin:1q2w3eCa!@138.68.23.202:15123/pozbee"));
+    mongoose.connect(config.get("mongoose:uri"));
     db.once("open",function(err){
 
     });
@@ -14,4 +14,6 @@
     database.User = require("./collections/user").Model;
     database.Device = require("./collections/device").Model;
     database.SocialUser = require("./collections/socialUser").Model;
+    database.PhotographerApplication = require("./collections/photographerApplication").Model;
+    database.Category = require("./collections/categories").Model;
 })(module.exports);

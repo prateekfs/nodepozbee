@@ -378,7 +378,7 @@
 
                 async.waterfall([
                     function (wf) {
-                        database.User.findOne({email: facebookData.email}).populate("SocialUser").exec(function (err, userResult) {
+                        database.User.findOne({phoneNumber: phoneNumber}).populate("SocialUser").exec(function (err, userResult) {
                             if (err) {
                                 wf(err);
                             } else {

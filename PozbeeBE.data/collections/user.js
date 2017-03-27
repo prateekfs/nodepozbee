@@ -43,6 +43,10 @@
             socialUser : {
                 type : Schema.Types.ObjectId,
                 ref : "SocialUser"
+            },
+            photographerApplications : {
+                type : [Schema.Types.ObjectId],
+                ref : "PhotographerApplication"
             }
         },{collection : "user"});
     userSchema.pre("validate", function(next){
