@@ -17,7 +17,7 @@
         link : {
             type : String
         },
-        profilePictureUri : {
+        pictureUri : {
             type : String
         },
         gender : {

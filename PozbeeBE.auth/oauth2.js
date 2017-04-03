@@ -7,7 +7,7 @@
     var Client = require("../PozbeeBE.data/collections/client").Model;
     var AccessToken = require('../PozbeeBE.data/collections/accessToken').Model;
     var RefreshToken = require('../PozbeeBE.data/collections/refreshToken').Model;
-
+    var _ = require("underscore");
 // create OAuth 2.0 server
     var aserver = oauth2orize.createServer();
 
@@ -58,13 +58,10 @@
                         log.error(err);
                         return done(err);
                     }
-                    var usr = user.toObject();
-                    delete usr.hashedPassword;
-                    delete usr.salt;
 
                     done(null, tokenValue, refreshTokenValue, {
                         'expires_in': config.get('security:tokenLife'),
-                        "user" : usr
+                        "user" : user
                     });
                 });
             });
@@ -82,7 +79,7 @@
             }
             var phoneNumber = params.phoneNumber;
             var activationCode = params.activationCode;
-            User.findOne({phoneNumber : phoneNumber}).populate("phoneActivation").populate("socialUser").exec(function(err,user){
+            User.findOne({phoneNumber : phoneNumber}).populate("phoneActivation").populate("socialUser").populate("photographerApplications").exec(function(err,user) {
                 if (err) {
                     var err = new oauth2orize.TokenError(
                         'Invalid scope: you provided an empty set of scopes',
@@ -91,12 +88,22 @@
 
                     return done(err);
                 }
-                if(!user || user.phoneActivation.activationCode != activationCode){
+                if (!user || user.phoneActivation.activationCode != activationCode) {
                     var err = new oauth2orize.TokenError(
                         'Yanlış Kullanıcı Adı veya Şifre'
                     );
 
                     return done(false);
+                }
+                var usr = user.toObject();
+
+                if (usr.photographerApplications && usr.photographerApplications.length > 0){
+                    var photographerApplication = _.sortBy(usr.photographerApplications, function (application) {
+                        return application.createdDate
+                    }).reverse()[0];
+                    delete usr.photographerApplications;
+
+                    usr.photographerApplication = photographerApplication;
                 }
 
                 var model = {
@@ -104,7 +111,7 @@
                     clientId: params.client.clientId,
                     deviceId : params.deviceId
                 };
-                generateTokens(model,user,done);
+                generateTokens(model,usr,done);
             });
         })
 

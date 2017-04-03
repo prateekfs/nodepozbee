@@ -2,6 +2,7 @@
     var database = require("../PozbeeBE.data/database");
     var operationResult = require("../PozbeeBE.helpers/operationResult");
     var loginOperationsManager = require("../PozbeeBE.managers/loginOperationsManager");
+    var userOperationsManager = require("../PozbeeBE.managers/userOperationsManager");
     var passport = require("passport");
 
     userController.init = function(router){
@@ -76,6 +77,19 @@
                 }
             })
         })
+
+        router.get("/checkIfUserUpdated", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            var version = req.query.version;
+
+            userOperationsManager.checkIfUserUpdated(userId,version, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
 
         router.get("/test/sadasd",passport.authenticate("bearer", {session : false}), function(req,res,next){
            res.status(200).send({"test": 1213});

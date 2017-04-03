@@ -43,11 +43,22 @@
             isApproved : {
                 type : Boolean,
                 required : true
+            },
+            reviewPhase : {
+                type : Number,
+                required : true
+            },
+            photoOfCamera : {
+                type : String
+            },
+            backgroundDocs : {
+                type : String
             }
         },{collection : "photographerApplication"});
 
     photographerApplicationSchema.pre("validate", function(next){
         this.created = new Date();
+        this.reviewPhase = 1;
         this.isApproved = false;
         next();
     });

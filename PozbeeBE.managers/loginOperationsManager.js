@@ -412,6 +412,7 @@
                             socialUser.facebookToken = facebookData.token;
                             socialUser.pictureUri = facebookData.pictureUri;
                             socialUser.link = facebookData.link;
+
                         } else {
                             database.SocialUser.findOne({userId: facebookData.id}).exec(function (err, socialUserResult) {
                                 if (err) {
@@ -427,7 +428,7 @@
                                             userId: facebookData.id,
                                             link: facebookData.link,
                                             gender: facebookData.gender,
-                                            pictureUri: facebookData.profilePictureUri,
+                                            pictureUri: facebookData.pictureUri,
                                             facebookToken: facebookData.token
                                         });
                                     }
@@ -538,7 +539,7 @@
                                     userId: facebookData.id,
                                     link: facebookData.link,
                                     gender: facebookData.gender,
-                                    pictureUri: facebookData.profilePictureUri,
+                                    pictureUri: facebookData.pictureUri,
                                     facebookToken: facebookData.token
                                 });
                                 socialUser.save(function (err, socialUserSaveResult) {

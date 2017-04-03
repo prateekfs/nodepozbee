@@ -31,6 +31,17 @@
             })
         });
 
+        router.get("/getPhotographerApplication",passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            photographerOperationsManager.getPhotographerApplicationOfUser(userId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+
         return router;
     }
 })(module.exports);
