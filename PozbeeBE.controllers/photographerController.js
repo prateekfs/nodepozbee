@@ -3,6 +3,7 @@
     var photographerOperationsManager = require("../PozbeeBE.managers/photographerOperationsManager");
     var passport = require("passport");
     var _ = require("underscore");
+
     photographerController.init = function(router){
 
         router.get('/becomeAPhotographer',passport.authenticate("bearer", {session : false}), function(req,res,next){
@@ -40,6 +41,10 @@
                     res.status(200).send(result);
                 }
             })
+        });
+
+        router.post("/uploadCameraPhoto",passport.authenticate("bearer",{session : false}), function(req,res,next) {
+            console.log("here");
         });
 
         return router;
