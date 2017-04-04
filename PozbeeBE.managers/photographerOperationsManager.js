@@ -19,7 +19,7 @@
                    minHourlyRate : data.rate,
                    webSite : data.website,
                    phoneModel : data.phoneModel,
-                   reviewPhase : 1,
+                   reviewPhase : 2,
                    isApproved : false
                });
 
@@ -88,7 +88,7 @@
                 var bacgroundDocPaths = _.map(backgroundDocs, function(photo){ return photo.path});
                 applicationResult.cameraPhotos = cameraPhotoPaths;
                 applicationResult.backgroundDocs = bacgroundDocPaths;
-                applicationResult.reviewPhase = 3;
+                //applicationResult.reviewPhase = 3;
 
                 applicationResult.save(function(err,applicationResultSaveResult){
                    if(err || !applicationResultSaveResult){
