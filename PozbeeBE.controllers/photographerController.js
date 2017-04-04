@@ -45,7 +45,17 @@
         });
         var cpUpload = upload.fields([{ name: 'cameraPhoto', maxCount: 5 }, { name: 'backgroundDoc', maxCount: 5 }])
         router.post("/uploadCameraPhoto",cpUpload,passport.authenticate("bearer",{session : false}), function(req,res,next) {
+            var photographerApplicationId = req.body.photographerApplicationId;
+            var cameraPhotos = req.files.cameraPhoto;
+            var backgroundDocs = req.files.backgroundDoc;
 
+            photographerOperationsManager.uploadDocumentsPhase(photographerApplicationId,cameraPhotos,backgroundDocs,function(err,result){
+               if(err){
+                   res.status(444).send(err);
+               } else{
+                   res.status(200).send(result);
+               }
+            });
         });
 
         return router;

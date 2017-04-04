@@ -18,7 +18,9 @@
                    ableToRetouch : data.retouch === "true" ? true : false,
                    minHourlyRate : data.rate,
                    webSite : data.website,
-                   phoneModel : data.phoneModel
+                   phoneModel : data.phoneModel,
+                   reviewPhase : 1,
+                   isApproved : false
                });
 
                photographerApplication.save(function(err,applicationSaveResult){
@@ -77,5 +79,25 @@
             }
         })
     }
+    photographerOperationsManager.uploadDocumentsPhase = function(applicationId, cameraPhotos, backgroundDocs,next){
+        database.PhotographerApplication.findOne({_id : mongoose.Types.ObjectId(applicationId)}).exec(function(err, applicationResult){
+            if(err || !applicationResult){
+                next(err);
+            }else{
+                var cameraPhotoPaths = _.map(cameraPhotos, function(photo){ return photo.path});
+                var bacgroundDocPaths = _.map(backgroundDocs, function(photo){ return photo.path});
+                applicationResult.cameraPhotos = cameraPhotoPaths;
+                applicationResult.backgroundDocs = bacgroundDocPaths;
+                applicationResult.reviewPhase = 3;
 
+                applicationResult.save(function(err,applicationResultSaveResult){
+                   if(err || !applicationResultSaveResult){
+                       next(err);
+                   }else{
+                       next(null, operationResult.createSuccesResult(applicationResultSaveResult.toObject()));
+                   }
+                });
+            }
+        });
+    }
 })(module.exports);
