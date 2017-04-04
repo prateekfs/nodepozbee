@@ -3,7 +3,8 @@
     var photographerOperationsManager = require("../PozbeeBE.managers/photographerOperationsManager");
     var passport = require("passport");
     var _ = require("underscore");
-
+    var multer = require("multer");
+    var upload = multer({dest : "./uploads"});
     photographerController.init = function(router){
 
         router.get('/becomeAPhotographer',passport.authenticate("bearer", {session : false}), function(req,res,next){
@@ -42,9 +43,9 @@
                 }
             })
         });
+        var cpUpload = upload.fields([{ name: 'cameraPhoto', maxCount: 5 }, { name: 'backgroundDoc', maxCount: 5 }])
+        router.post("/uploadCameraPhoto",cpUpload,passport.authenticate("bearer",{session : false}), function(req,res,next) {
 
-        router.post("/uploadCameraPhoto",passport.authenticate("bearer",{session : false}), function(req,res,next) {
-            console.log("here");
         });
 
         return router;
