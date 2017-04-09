@@ -58,6 +58,41 @@
             });
         });
 
+        router.get("/createPhotographer", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            photographerOperationsManager.createPhotographer(userId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+
+        router.get("/setPhotographerActive/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
+            var photographerId = req.params.photographerId;
+            var isActive = req.params.isActive;
+            photographerOperationsManager.setPhotographerActiveStatus(photographerId, isActive, function(err,result){
+               if(err){
+                   res.status(444).send(err);
+               } else{
+                   res.status(200).send(result);
+               }
+            });
+        });
+
+        router.get("/setPhotographerOnline/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
+            var photographerId = req.params.photographerId;
+            var isOnline = req.query.isOnline == "1" ? true : false;
+            photographerOperationsManager.setPhotographerOnlineStatus(photographerId,isOnline, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            });
+        });
+
         return router;
     }
 })(module.exports);

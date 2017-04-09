@@ -49,7 +49,11 @@
                     type : Schema.Types.ObjectId,
                     ref : "PhotographerApplication"
                 }
-            ]
+            ],
+            photographer : {
+                type : Schema.Types.ObjectId,
+                ref : "Photographer"
+            }
         },{collection : "user"});
     userSchema.pre("validate", function(next){
         this.created = new Date();

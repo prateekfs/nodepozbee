@@ -3,6 +3,7 @@
     var operationResult = require("../PozbeeBE.helpers/operationResult");
     var mongoose = require("mongoose");
     var _ = require("underscore");
+    var async = require("async");
     photographerOperationsManager.createNewApplication = function(userId, data, next){
         database.User.findOne({_id : mongoose.Types.ObjectId(userId)}).exec(function(err,userResult){
            if(err){
@@ -100,4 +101,79 @@
             }
         });
     }
+
+    photographerOperationsManager.createPhotographer = function(userId, next){
+        async.waterfall([
+            function(wf){
+                database.User.findOne({_id : userId}).populate("photographerApplications").exec(function(err,userResult){
+                    if(err){
+                        wf(err);
+                    } else{
+                        if(!userResult){
+                            wf(operationResult.createErrorResult(""));
+                        }else{
+                            var photographerApplication =  _.sortBy(userResult.photographerApplications, function(application){return application.createdDate}).reverse()[0];
+                            wf(null,userResult,photographerApplication);
+                        }
+                    }
+                });
+            },
+            function(user, photographerApplication, wf){
+                var photographer = new database.Photographer({
+                    photographerApplication : photographerApplication._id
+                });
+                photographer.save(function(err,photographerSaveResult){
+                    if(err){
+                        wf(err)
+                    } else{
+                        if(!photographerSaveResult){
+                            wf(operationResult.createErrorResult(""));
+                        }else{
+                            wf(null,user,photographerSaveResult);
+                        }
+                    }
+                });
+            },function(user,photographer,wf){
+                user.photographer = photographer._id;
+                user.save(function(err,userSaveResult){
+                   if(err){
+                       wf(err);
+                   } else{
+                       if(!userSaveResult){
+                           wf(operationResult.createErrorResult(""));
+                       }else{
+                           wf(null, photographer);
+                       }
+                   }
+                });
+            }
+        ],function(err, photographer){
+            if(err){
+                next(err);
+            }else{
+                next(null,operationResult.createSuccesResult(photographer));
+            }
+        });
+    }
+
+    photographerOperationsManager.setPhotographerActiveStatus = function(photographerId, isActive, next){
+        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isActive : isActive}}).exec(function(err,updateResult){
+           if(err){
+               next(err);
+           } else{
+               next(null, operationResult.createSuccesResult(true));
+           }
+        });
+    }
+
+    photographerOperationsManager.setPhotographerOnlineStatus = function(photographerId, isOnline, next){
+        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isOnline : isOnline}}).exec(function(err,updateResult){
+            if(err){
+                next(err);
+            } else{
+                next(null, operationResult.createSuccesResult(true));
+            }
+        });
+    }
+
 })(module.exports);

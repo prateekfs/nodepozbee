@@ -16,4 +16,5 @@
     database.SocialUser = require("./collections/socialUser").Model;
     database.PhotographerApplication = require("./collections/photographerApplication").Model;
     database.Category = require("./collections/categories").Model;
+    database.Photographer = require("./collections/photographer").Model;
 })(module.exports);
