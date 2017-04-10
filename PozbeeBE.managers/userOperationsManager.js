@@ -23,4 +23,16 @@
         });
     }
 
+    userOperationsManager.fetchCategories = function(next){
+        database.Category.find({}).exec(function(err,result){
+           if(err){
+               next(err);
+           } else{
+               var categories = [];
+               _.each(result, function(cat){ return categories.push(cat.toObject()); });
+               next(null,operationResult.createSuccesResult(categories));
+           }
+        });
+    }
+
 })(module.exports)

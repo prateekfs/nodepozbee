@@ -9,12 +9,15 @@
            if(err){
                next(err);
            } else{
+               var categoriesArray = _.map(data.specialization, function(catId){
+                  return {categoryId : mongoose.Types.ObjectId(catId), styles : [1,2]};
+               });
                var photographerApplication = new database.PhotographerApplication({
                    name : data.name,
                    email : data.email,
                    zipCode : data.zipCode,
                    phoneNumber : data.phoneNumber,
-                   categories : data.specialization,
+                   categories : categoriesArray,
                    cameraModel : data.camera,
                    ableToRetouch : data.retouch === "true" ? true : false,
                    minHourlyRate : data.rate,
@@ -89,8 +92,8 @@
                 var bacgroundDocPaths = _.map(backgroundDocs, function(photo){ return photo.path});
                 applicationResult.cameraPhotos = cameraPhotoPaths;
                 applicationResult.backgroundDocs = bacgroundDocPaths;
-                //applicationResult.reviewPhase = 3;
-
+                applicationResult.reviewPhase = 4;
+                applicationResult.isApproved = true;
                 applicationResult.save(function(err,applicationResultSaveResult){
                    if(err || !applicationResultSaveResult){
                        next(err);
@@ -120,7 +123,8 @@
             },
             function(user, photographerApplication, wf){
                 var photographer = new database.Photographer({
-                    photographerApplication : photographerApplication._id
+                    photographerApplication : photographerApplication._id,
+                    categories : photographerApplication.categories
                 });
                 photographer.save(function(err,photographerSaveResult){
                     if(err){

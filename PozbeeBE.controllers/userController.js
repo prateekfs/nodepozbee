@@ -94,7 +94,15 @@
         router.get("/test/sadasd",passport.authenticate("bearer", {session : false}), function(req,res,next){
            res.status(200).send({"test": 1213});
         });
-
+        router.get("/fetchCategories", passport.authenticate("bearer", {session : false}), function(req,res,next){
+           userOperationsManager.fetchCategories(function(err,result){
+               if(err){
+                   res.status(444).send(err);
+               }else{
+                   res.status(200).send(result);
+               }
+           })
+        });
         //app.get("/campaign/getUserPopulationRange/:venueId/:meters",
         //    passport.authenticate("bearer", { session : false }),
         //    mustbe.authorized("roles.pusher",

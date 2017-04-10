@@ -5,6 +5,12 @@
             name : {
                 type : String,
                 required:  true
+            },
+            picture : {
+                type : String
+            },
+            showInInstant : {
+                type : Boolean
             }
         },{collection : "category"});
 

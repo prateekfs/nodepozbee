@@ -1,7 +1,13 @@
 (function(photographerApplication){
     var mongoose = require('mongoose'),
         Schema = mongoose.Schema,
-
+        categorySchema = new Schema({
+            categoryId : {
+                type : Schema.Types.ObjectId,
+                ref : "Category"
+            },
+            styles : [Number]
+        },{_id : false}),
         photographerApplicationSchema= new Schema({
             name : {
               type : String,
@@ -23,10 +29,7 @@
                 type : String,
                 required : true
             },
-            categories : {
-                type : [Schema.Types.ObjectId],
-                ref: "Categories"
-            },
+            categories : [categorySchema],
             cameraModel : {
                 type : String,
                 required : true
@@ -64,6 +67,6 @@
     photographerApplicationSchema.pre("update", function(){
         this.update({}, {$set : {updated : new Date() } } );
     });
-
+    photographerApplication.categorySchema = categorySchema;
     photographerApplication.Model = mongoose.model("PhotographerApplication",photographerApplicationSchema);
 })(module.exports);

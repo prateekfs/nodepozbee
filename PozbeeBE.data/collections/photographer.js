@@ -1,5 +1,6 @@
 (function(photographer){
     var mongoose = require('mongoose'),
+        photographerApplication = require("./photographerApplication"),
         Schema = mongoose.Schema,
         unavailabilitySchema = new Schema({
             from:{
@@ -12,6 +13,9 @@
         pricingSchema = new Schema({
             categoryId : {
                 type : Schema.Types.ObjectId
+            },
+            style : {
+                type : Number
             },
             price : {
                 type : Number
@@ -50,7 +54,8 @@
                 coordinates : {
                     type : [Number]
                 }
-            }
+            },
+            categories : [photographerApplication.categorySchema]
         },{collection : "photographer"});
 
     photographerSchema.pre("validate", function(next){

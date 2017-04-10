@@ -33,7 +33,7 @@ app.use('/api/oauth/token', oauth2.token);
 app.use('/', index);
 app.use('/users', users);
 //
-
+app.use('/api/images', express.static('public/images'))
 var controllers = require("./PozbeeBE.controllers");
 controllers.init(app);
 
