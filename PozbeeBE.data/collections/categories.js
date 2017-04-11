@@ -11,6 +11,9 @@
             },
             showInInstant : {
                 type : Boolean
+            },
+            isDefault : {
+                type : Boolean
             }
         },{collection : "category"});
 
