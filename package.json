@@ -26,6 +26,7 @@
     "passport-oauth2-client-password": "^0.1.2",
     "randomstring": "^1.1.5",
     "serve-favicon": "~2.3.2",
+    "socket.io": "^1.7.3",
     "underscore": "^1.8.3"
   }
 }

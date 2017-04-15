@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var database = require("./PozbeeBE.data/database");
-
+require("./PozbeeBE.helpers/utils");
 var index = require('./routes/index');
 var users = require('./routes/users');
 
@@ -33,9 +33,10 @@ app.use('/api/oauth/token', oauth2.token);
 app.use('/', index);
 app.use('/users', users);
 //
-app.use('/api/images', express.static('public/images'))
-var controllers = require("./PozbeeBE.controllers");
-controllers.init(app);
+app.use('/api/images', express.static('public/images'));
+
+app.controllers = require("./PozbeeBE.controllers");
+app.controllers.init(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

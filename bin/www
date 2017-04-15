@@ -20,7 +20,8 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-
+var io = require("../PozbeeBE.helpers/socket/customerIO").init(server);
+app.controllers.applyIOToControllers(io);
 /**
  * Listen on provided port, on all network interfaces.
  */

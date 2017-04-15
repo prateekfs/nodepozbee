@@ -7,3 +7,14 @@ GLOBAL.randomValueBase64 = function randomValueBase64 (len) {
         .replace(/\+/g, '0')  // replace '+' with '0'
         .replace(/\//g, '0'); // replace '/' with '0'
 }
+
+GLOBAL.Dictionary = function Dictionary() {
+    var dictionary = {};
+
+    this.setData = function (key, val) { dictionary[key] = val; }
+    this.getData = function (key) { return dictionary[key]; }
+    this.removeKey = function (key) { delete dictionary[key]; }
+
+    this.dict = dictionary
+
+}

@@ -64,7 +64,7 @@
                     return done(null, false);
                 }
 
-                if(token.userId && Math.round((Date.now()-token.created)/1000) > 86400 ) {
+                if(token.userId && Math.round((Date.now()-token.created)/1000) > 100 ) {
 
                     AccessToken.remove({ token: accessToken }, function (err) {
                         if (err) {

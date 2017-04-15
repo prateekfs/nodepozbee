@@ -5,6 +5,7 @@
     var _ = require("underscore");
     var multer = require("multer");
     var upload = multer({dest : "./uploads"});
+    photographerController.io;
     photographerController.init = function(router){
 
         router.get('/becomeAPhotographer',passport.authenticate("bearer", {session : false}), function(req,res,next){
@@ -72,6 +73,9 @@
         router.get("/setPhotographerActive/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
             var photographerId = req.params.photographerId;
             var isActive = req.params.isActive;
+            if(photographerController.io){
+                photographerController.io.of("customer").to(req.user._id.toString()).emit("joinedSuccessFully");
+            }
             photographerOperationsManager.setPhotographerActiveStatus(photographerId, isActive, function(err,result){
                if(err){
                    res.status(444).send(err);
