@@ -2,7 +2,6 @@
     var _ = require("underscore");
     var socket = require("socket.io");
     var operationResult = require("../operationResult");
-    customerIO.customerDevices = new Dictionary();
     customerIO.init = function(app){
         var io = socket(app);
         io.of("customer").on("connection",function(s){

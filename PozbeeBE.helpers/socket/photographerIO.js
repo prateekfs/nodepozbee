@@ -1,12 +1,11 @@
-(function(customerIO){
+(function(photographerIO){
     var _ = require("underscore");
     var socket = require("socket.io");
     var operationResult = require("../operationResult");
-    customerIO.customerDevices = new Dictionary();
-    customerIO.io;
-    customerIO.init = function(app){
-        customerIO.io = socket(app);
-        io.of("customer").on("connection",function(s){
+    photographerIO.io;
+    photographerIO.init = function(app){
+        var io = socket(app);
+        io.of("photographer").on("connection",function(s){
             s.on("join", function(userId,cb){
                 s.join(userId, function(err){
                     cb(operationResult.createSuccesResult());
@@ -16,6 +15,10 @@
                     })
                 });
             });
-        })
+            s.on("disconnect", function(){
+                console.log(s.id);
+            })
+        });
+
     }
 })(module.exports);

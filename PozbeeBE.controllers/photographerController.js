@@ -5,7 +5,8 @@
     var _ = require("underscore");
     var multer = require("multer");
     var upload = multer({dest : "./uploads"});
-    photographerController.io;
+    photographerController.customerIO;
+    photographerController.photographerIO;
     photographerController.init = function(router){
 
         router.get('/becomeAPhotographer',passport.authenticate("bearer", {session : false}), function(req,res,next){
@@ -72,7 +73,7 @@
 
         router.get("/setPhotographerActive/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
             var photographerId = req.params.photographerId;
-            var isActive = req.params.isActive;
+            var isActive = req.query.isActive === "1" ? true : false;
             if(photographerController.io){
                 photographerController.io.of("customer").to(req.user._id.toString()).emit("joinedSuccessFully");
             }
@@ -97,6 +98,17 @@
             });
         });
 
+        router.get("/checkIfPhotographerUpdated/:photographerId/:version", passport.authenticate("bearer",{session : false}), function(req,res){
+            var photographerId = req.params.photographerId;
+            var version = Number(req.params.version)
+            photographerOperationsManager.checkIfPhotographerUpdated(photographerId,version, function(err,result){
+               if(err){
+                   res.status(444).send(err);
+               } else{
+                   res.status(200).send(result);
+               }
+            });
+        });
         return router;
     }
 })(module.exports);

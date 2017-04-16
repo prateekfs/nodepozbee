@@ -161,7 +161,7 @@
     }
 
     photographerOperationsManager.setPhotographerActiveStatus = function(photographerId, isActive, next){
-        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isActive : isActive}}).exec(function(err,updateResult){
+        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isActive : isActive}, $inc : {__v : 1}}).exec(function(err,updateResult){
            if(err){
                next(err);
            } else{
@@ -171,7 +171,7 @@
     }
 
     photographerOperationsManager.setPhotographerOnlineStatus = function(photographerId, isOnline, next){
-        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isOnline : isOnline}}).exec(function(err,updateResult){
+        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isOnline : isOnline}, $inc : {__v : 1}}).exec(function(err,updateResult){
             if(err){
                 next(err);
             } else{
@@ -180,4 +180,17 @@
         });
     }
 
+    photographerOperationsManager.checkIfPhotographerUpdated = function(photographerId, version, next){
+        database.Photographer.findOne({_id : mongoose.Types.ObjectId(photographerId)}).exec(function(err,photographerResult){
+           if(err){
+               next(err);
+           } else{
+               if(photographerResult.__v != version){
+                   next(operationResult.createSuccesResult(photographerResult.toObject()));
+               }else{
+                   next(operationResult.createSuccesResult());
+               }
+           }
+        });
+    }
 })(module.exports);

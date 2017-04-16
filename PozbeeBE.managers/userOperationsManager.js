@@ -6,7 +6,7 @@
     var _ = require("underscore");
 
     userOperationsManager.checkIfUserUpdated = function(id, version, next){
-        database.User.findOne({_id : mongoose.Types.ObjectId(id)}).populate("socialUser").populate("photographerApplications").exec(function(err,userResult){
+        database.User.findOne({_id : mongoose.Types.ObjectId(id)}).populate("socialUser").populate("photographerApplications").populate("photographer").exec(function(err,userResult){
            if(err || !userResult){
                next(err);
            } else{
