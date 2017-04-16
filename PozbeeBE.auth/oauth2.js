@@ -136,7 +136,7 @@
 
                 var model = {
                     clientId: params.client.clientId,
-                    deviceId : params.deviceId,
+                    deviceId : token.deviceId,
                     deviceModel : params.deviceModel
                 };
 
