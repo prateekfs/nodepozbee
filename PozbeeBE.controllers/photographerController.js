@@ -80,7 +80,7 @@
                    res.status(444).send(err);
                } else{
                    if(photographerController.photographerIO){
-                       photographerController.photographerIO.of("photographer").to(isActive, deviceId).emit("photographerActiveStatusChanged");
+                       photographerController.photographerIO.of("photographer").to(req.user._id.toString()).emit("photographerActiveStatusChanged",isActive,deviceId);
                    }
                    res.status(200).send(result);
                }
@@ -96,7 +96,7 @@
                     res.status(444).send(err);
                 } else{
                     if(photographerController.photographerIO){
-                        photographerController.photographerIO.of("photographer").to(isActive, deviceId).emit("photographerOnlineStatusChanged");
+                        photographerController.photographerIO.of("photographer").to(req.user._id.toString()).emit("photographerOnlineStatusChanged",isOnline,deviceId);
                     }
                     res.status(200).send(result);
                 }

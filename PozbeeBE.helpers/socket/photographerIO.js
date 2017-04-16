@@ -2,7 +2,6 @@
     var _ = require("underscore");
     var socket = require("socket.io");
     var operationResult = require("../operationResult");
-    photographerIO.io;
     photographerIO.init = function(app){
         var io = socket(app);
         io.of("photographer").on("connection",function(s){
@@ -15,10 +14,8 @@
                     })
                 });
             });
-            s.on("disconnect", function(){
-                console.log(s.id);
-            })
-        });
+        })
 
+        return io;
     }
 })(module.exports);
