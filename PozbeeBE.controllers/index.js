@@ -11,9 +11,9 @@
         app.use("/api/photographer", photographerController.init(router));
     }
 
-    controllers.applyIOToControllers = function(customerIO, photographerIO){
-        userController.io = customerIO;
-        photographerController.customerIO = customerIO;
-        photographerController.photographerIO = photographerIO;
+    controllers.applyIOToControllers = function(io){
+        userController.io = io;
+        photographerController.io = io;
+        photographerController.io = io;
     }
 })(module.exports);

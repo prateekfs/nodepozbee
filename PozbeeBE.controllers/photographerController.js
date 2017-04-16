@@ -79,8 +79,8 @@
                if(err){
                    res.status(444).send(err);
                } else{
-                   if(photographerController.photographerIO){
-                       photographerController.photographerIO.of("photographer").to(req.user._id.toString()).emit("photographerActiveStatusChanged",isActive,deviceId);
+                   if(photographerController.io){
+                       photographerController.io.of("photographer").to(req.user._id.toString()).emit("photographerActiveStatusChanged",isActive,deviceId);
                    }
                    res.status(200).send(result);
                }
@@ -95,8 +95,9 @@
                 if(err){
                     res.status(444).send(err);
                 } else{
-                    if(photographerController.photographerIO){
-                        photographerController.photographerIO.of("photographer").to(req.user._id.toString()).emit("photographerOnlineStatusChanged",isOnline,deviceId);
+                    if(photographerController.io){
+                        photographerController.io.of("photographer").to(req.user._id.toString()).emit("photographerOnlineStatusChanged",isOnline,deviceId);
+                        photographerController.io.of("customer").to(req.user._id.toString()).emit("joinedSuccessFully",isOnline,deviceId);
                     }
                     res.status(200).send(result);
                 }
