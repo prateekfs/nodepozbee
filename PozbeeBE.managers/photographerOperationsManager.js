@@ -186,9 +186,9 @@
                next(err);
            } else{
                if(photographerResult.__v != version){
-                   next(operationResult.createSuccesResult(photographerResult.toObject()));
+                   next(null, operationResult.createSuccesResult(photographerResult.toObject()));
                }else{
-                   next(operationResult.createSuccesResult());
+                   next(null, operationResult.createSuccesResult());
                }
            }
         });
