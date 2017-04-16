@@ -54,8 +54,6 @@
 
                 token.save(function (err,token) {
                     if (err != null) {
-
-                        log.error(err);
                         return done(err);
                     }
 

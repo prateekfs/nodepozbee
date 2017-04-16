@@ -74,13 +74,14 @@
         router.get("/setPhotographerActive/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
             var photographerId = req.params.photographerId;
             var isActive = req.query.isActive === "1" ? true : false;
-            if(photographerController.io){
-                photographerController.io.of("customer").to(req.user._id.toString()).emit("joinedSuccessFully");
-            }
+            var deviceId = req.query.deviceId;
             photographerOperationsManager.setPhotographerActiveStatus(photographerId, isActive, function(err,result){
                if(err){
                    res.status(444).send(err);
                } else{
+                   if(photographerController.photographerIO){
+                       photographerController.photographerIO.of("photographer").to(isActive, deviceId).emit("photographerActiveStatusChanged");
+                   }
                    res.status(200).send(result);
                }
             });
@@ -89,10 +90,14 @@
         router.get("/setPhotographerOnline/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res){
             var photographerId = req.params.photographerId;
             var isOnline = req.query.isOnline == "1" ? true : false;
+            var deviceId = req.query.deviceId;
             photographerOperationsManager.setPhotographerOnlineStatus(photographerId,isOnline, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 } else{
+                    if(photographerController.photographerIO){
+                        photographerController.photographerIO.of("photographer").to(isActive, deviceId).emit("photographerOnlineStatusChanged");
+                    }
                     res.status(200).send(result);
                 }
             });
