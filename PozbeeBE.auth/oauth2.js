@@ -43,7 +43,7 @@
 
                 tokenValue = crypto.randomBytes(32).toString('hex');
                 refreshTokenValue = crypto.randomBytes(32).toString('hex');
-
+                data.userId = user._id;
                 data.token = tokenValue;
                 token = new AccessToken(data);
 
@@ -135,7 +135,6 @@
                 if (!user) { return done(null, false); }
 
                 var model = {
-                    userId: user._id,
                     clientId: params.client.clientId,
                     deviceId : params.deviceId,
                     deviceModel : params.deviceModel
