@@ -7,7 +7,10 @@
     var Client = require("../PozbeeBE.data/collections/client").Model;
     var AccessToken = require('../PozbeeBE.data/collections/accessToken').Model;
     var RefreshToken = require('../PozbeeBE.data/collections/refreshToken').Model;
+    var Device = require("../PozbeeBE.data/collections/device").Model;
     var _ = require("underscore");
+    var mongoose = require("mongoose");
+
 // create OAuth 2.0 server
     var aserver = oauth2orize.createServer();
 
@@ -56,7 +59,8 @@
                     if (err != null) {
                         return done(err);
                     }
-
+                    Device.update({_id : mongoose.Types.ObjectId(data.deviceId)},{$set : {isActive : true}}).exec();
+                    Device.update({activeUserId : data.userId, _id : {$ne : mongoose.Types.ObjectId(data.deviceId)}}, {$set : {isActive : false}},{multi : true}).exec();
                     done(null, tokenValue, refreshTokenValue, {
                         'expires_in': config.get('security:tokenLife'),
                         "user" : user
