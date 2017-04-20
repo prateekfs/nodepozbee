@@ -60,7 +60,7 @@
         },{collection : "photographerApplication"});
 
     photographerApplicationSchema.pre("validate", function(next){
-        this.created = new Date();
+        if (!this.created) { this.created = new Date(); }
         next();
     });
 

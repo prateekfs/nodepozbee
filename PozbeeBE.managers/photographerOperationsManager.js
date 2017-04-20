@@ -193,4 +193,52 @@
            }
         });
     }
+
+    photographerOperationsManager.updateLocationOfPhotographer = function(userId, data, next){
+        async.waterfall([
+            function(wf){
+                database.Device.findOne({_id : mongoose.Types.ObjectId(data.deviceId)}).populate("activeUserId").exec(function(err,device){
+                    if(err){
+                        wf(err);
+                    }else{
+                        var location = {
+                            type : "Point",
+                            coordinates : [data.longitude, data.latitude]
+                        }
+                        device.location = location;
+                        device.lastLocationUpdateDate = data.eventDate;
+                        device.save(function(err,deviceSaveResult){
+                           if(err){
+                               wf(err);
+                           } else{
+                               wf(null,device);
+                           }
+                        });
+                    }
+                });
+            },function(device,wf){
+                database.User.populate(device.activeUserId, {"path" : "photographer"}, function(err,userOutput) {
+                    if (err) {
+                        wf(err);
+                    } else {
+                        var photographer = userOutput.photographer;
+                        database.Photographer.update({_id : photographer._id},{$set :{location : device.location, lastLocationUpdateDate : device.lastLocationUpdateDate}}).exec(function(err,updateResult){
+                            if (err) {
+                                wf(err);
+                            } else {
+                                wf(null)
+                            }
+                        });
+                    }
+                })
+            }
+        ], function(err){
+            if(err){
+                next(err);
+            }else{
+                next(null, operationResult.createSuccesResult());
+            }
+        })
+
+    }
 })(module.exports);

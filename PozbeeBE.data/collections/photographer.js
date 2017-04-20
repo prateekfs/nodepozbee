@@ -20,7 +20,7 @@
             price : {
                 type : Number
             }
-        })
+        }),
         photographerSchema= new Schema({
             created : {
                 type : Date,
@@ -47,6 +47,9 @@
             pricing:{
                 type : [pricingSchema]
             },
+            lastLocationUpdateDate: {
+                type : Date
+            },
             location : {
                 type : {
                     type : String
@@ -59,9 +62,15 @@
         },{collection : "photographer"});
 
     photographerSchema.pre("validate", function(next){
-        this.created = new Date();
-        this.isOnline = false;
-        this.isActive = false;
+        if (!this.created) { this.created = new Date(); }
+        if (!this.isOnline) { this.isOnline = false; }
+        if (!this.isActive) { this.isActive = false; }
+        if (!this.location) {
+            this.location = {
+                type: "Point",
+                coordinates: [0, 0]
+            };
+        }
         next();
     });
 

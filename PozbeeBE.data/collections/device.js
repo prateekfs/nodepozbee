@@ -20,6 +20,9 @@
             lastUpdateDate : {
                 type : Date
             },
+            lastLocationUpdateDate : {
+                type : Date
+            },
             isActive : {
                 type : Boolean,
                 required : true,
@@ -32,8 +35,14 @@
             }
         },{collection : "device"});
         deviceSchema.pre("validate", function(next){
-            this.createdDate = new Date();
-            this.isActive = true;
+            if(!this.createdDate){ this.createdDate = new Date(); }
+            if(!this.isActive){ this.isActive = true; }
+            if (this.location.coordinates.length == 0) {
+                this.location = {
+                    type: "Point",
+                    coordinates: [0, 0]
+                };
+            }
             next();
         });
         deviceSchema.pre("update", function(next){

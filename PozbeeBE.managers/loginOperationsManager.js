@@ -226,7 +226,7 @@
                     var device;
                     if (user) {
                         device = new Device({
-                            activeUserId: user._id
+                            activeUserId: user._id,
                         });
                     } else if (socialUser) {
                         device = new Device({

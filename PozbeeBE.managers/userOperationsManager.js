@@ -35,4 +35,28 @@
         });
     }
 
+    userOperationsManager.logout = function(deviceId, next){
+        database.Device.update({_id : mongoose.Types.ObjectId(deviceId)},{$set : {isActive : false}}).exec(function(err,updateResult){
+           if(err){
+               next(err);
+           } else{
+               if(updateResult.nModified > 0){
+                   database.AccessToken.remove({deviceId : deviceId},function(err,removeResult){
+                      if(err){
+
+                      }
+                   });
+                   database.RefreshToken.remove({deviceId : deviceId}, function(err,removeResult){
+                      if(err){
+
+                      }
+                   });
+                   next(null,operationResult.createSuccesResult());
+               }else{
+                   next(null,operationResult.createErrorResult());
+               }
+           }
+        });
+    }
+
 })(module.exports)
