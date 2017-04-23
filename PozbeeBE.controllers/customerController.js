@@ -100,7 +100,7 @@
                                     }
                                 }
                             });
-                        },10000)
+                        },5000);
                     }, function(err){
                         if(timer){
                             clearTimeout(timer);
