@@ -154,17 +154,15 @@
         });
     }
 
-    customerOperations.getInstantRequestById = function(instantRequestId, next){
-        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).exec(function(err,result){
-            if(err){
+    customerOperations.getInstantRequestById = function(instantRequestId, next) {
+        database.InstantRequest.findOne({_id: mongoose.Types.ObjectId(instantRequestId)}).exec(function (err, result) {
+            if (err) {
                 next(err);
-            }else{
+            } else {
                 next(result);
             }
         });
     }
-
-    customerOperations.checkIfInstantRequestHasTaken = function(instantRequest  )
 
     customerOperations.sortPhotographersByTheirAcceptence = function(photographerIds, excludingInstantRequestIds, next){
         excludingInstantRequestIds = excludingInstantRequestIds == null ? [] : excludingInstantRequestIds;
