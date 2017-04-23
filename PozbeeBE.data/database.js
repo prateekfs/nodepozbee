@@ -17,4 +17,5 @@
     database.PhotographerApplication = require("./collections/photographerApplication").Model;
     database.Category = require("./collections/categories").Model;
     database.Photographer = require("./collections/photographer").Model;
+    database.InstantRequest = require("./collections/instantRequest").Model;
 })(module.exports);

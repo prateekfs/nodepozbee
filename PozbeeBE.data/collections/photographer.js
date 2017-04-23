@@ -65,13 +65,13 @@
         if (!this.created) { this.created = new Date(); }
         if (!this.isOnline) { this.isOnline = false; }
         if (!this.isActive) { this.isActive = false; }
-        if (!this.location) {
+        if (this.location.coordinates.length == 0) {
             this.location = {
                 type: "Point",
                 coordinates: [0, 0]
             };
         }
-        next();
+            next();
     });
 
     photographerSchema.pre("update", function(){

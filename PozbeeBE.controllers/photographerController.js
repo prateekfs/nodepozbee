@@ -5,8 +5,11 @@
     var _ = require("underscore");
     var multer = require("multer");
     var upload = multer({dest : "./uploads"});
-    photographerController.customerIO;
-    photographerController.photographerIO;
+
+    photographerController.applyIOToManagers = function(io){
+        photographerOperationsManager.io = io;
+    }
+
     photographerController.init = function(router){
 
         router.get("/createPhotographer", passport.authenticate("bearer",{session : false}), function(req,res,next){
@@ -24,7 +27,8 @@
             var photographerId = req.params.photographerId;
             var isActive = req.query.isActive === "1" ? true : false;
             var deviceId = req.query.deviceId;
-            photographerOperationsManager.setPhotographerActiveStatus(photographerId, isActive, function(err,result){
+            var userId = req.user._id;
+            photographerOperationsManager.setPhotographerActiveStatus(userId, photographerId, isActive, function(err,result){
                if(err){
                    res.status(444).send(err);
                } else{
@@ -68,7 +72,6 @@
         router.post("/uploadPhotographerLocation", passport.authenticate("bearer",{session : false}), function(req,res){
             var userId = req.user._id;
             var data = req.body;
-
             photographerOperationsManager.updateLocationOfPhotographer(userId, data, function(err,result){
                 if(err){
                     res.status(444).send(err);

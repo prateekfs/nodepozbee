@@ -160,14 +160,25 @@
         });
     }
 
-    photographerOperationsManager.setPhotographerActiveStatus = function(photographerId, isActive, next){
-        database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isActive : isActive}, $inc : {__v : 1}}).exec(function(err,updateResult){
-           if(err){
-               next(err);
-           } else{
-               next(null, operationResult.createSuccesResult(true));
-           }
-        });
+    photographerOperationsManager.setPhotographerActiveStatus = function(userId, photographerId, isActive, next){
+        database.InstantRequest.findOne({userId : userId, finished : false, finishedDate : null}).exec(function(err,instantRequest){
+            if(err){
+                next(err);
+            }else{
+                if(!instantRequest){
+                    database.Photographer.update({_id : mongoose.Types.ObjectId(photographerId)},{$set : {isActive : isActive}, $inc : {__v : 1}}).exec(function(err,updateResult){
+                        if(err){
+                            next(err);
+                        } else{
+                            next(null, operationResult.createSuccesResult(true));
+                        }
+                    });
+                }else{
+                    next(null, operationResult.createErrorResult("You have active instant request"));
+                }
+            }
+        })
+
     }
 
     photographerOperationsManager.setPhotographerOnlineStatus = function(photographerId, isOnline, next){

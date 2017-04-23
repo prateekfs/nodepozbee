@@ -4,6 +4,7 @@
     var operationResult = require("../operationResult");
     var database = require("../../PozbeeBE.data/database");
     var mongoose = require("mongoose");
+    var async = require("async");
 
     customerIO.init = function(app){
         var io = socket(app);
@@ -11,9 +12,8 @@
             s.on("join", function(userId,cb){
                 s.join(userId, function(err){
                     cb(operationResult.createSuccesResult());
-                    s.emit("joinedSuccessFully", "şans","test", function(data,test){
-                        console.log(data);
-                        console.log(test);
+                    s.emit("joinedSuccessFully", function(data,test){
+
                     })
                 });
             });

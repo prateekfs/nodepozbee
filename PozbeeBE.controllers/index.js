@@ -17,6 +17,10 @@
     controllers.applyIOToControllers = function(io){
         userController.io = io;
         photographerController.io = io;
+        photographerController.applyIOToManagers(io);
+        customerController.io = io;
+        customerController.applyIOToManagers(io);
+
         photographerController.io = io;
     }
 })(module.exports);
