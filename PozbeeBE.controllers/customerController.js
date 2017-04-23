@@ -7,12 +7,14 @@
     var upload = multer({dest : "./uploads"});
     var _ = require("underscore");
     var async = require("async");
+    var operationResult = require("../PozbeeBE.helpers/operationResult");
 
     customerController.applyIOToManagers = function(io){
         customerOperations.io = io;
     }
 
     customerController.init = function(router){
+
         router.post("/getPhotographersWithinRect", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var arrayOfCoordinates = [];
             var arrayOfRegion = [];
@@ -72,22 +74,48 @@
             })
         })
 
-        router.post("/startCheckingPhotographers/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
+        router.get("/startCheckingPhotographers/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = req.params.instantRequestId;
             customerOperations.getInstantRequestById(instantRequestId, function(err,result){
                 if(err){
 
                 }else{
+                    var timer;
+                    var found = false;
                     async.eachSeries(result.photographerRequests, function(item, callback){
-                        io.of("photographer").to(item).emit("newPhotographerRequest");
-                        var timer = setTimeout(function(){
+                        if(found){
                             callback();
+                        }
+                        customerController.io.of("photographer").to(item._id.toString()).emit("newPhotographerRequest");
+                        timer = setTimeout(function(){
+                            customerOperations.checkIfInstantRequestHasTaken(instantRequestId, function(err,result){
+                                clearTimeout(timer);
+                                if(err){
+                                    callback();
+                                }else{
+                                    if(result === true){
+                                        found = true
+                                    }else{
+                                        callback();
+                                    }
+                                }
+                            });
                         },10000)
                     }, function(err){
+                        if(timer){
+                            clearTimeout(timer);
+                        }
+                        if(!found){
+                            customerOperations.setInstantRequestNotFound(instantRequestId, function(err,result){
 
+                            });
+                            customerController.io.of("customer").to(result.userId.toString()).emit("noPhotographerHasBeenFound");
+                        }
                     })
                 }
             })
+
+            res.status(200).send(operationResult.createSuccesResult());
         });
 
         return router

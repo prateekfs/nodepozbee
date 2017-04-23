@@ -154,14 +154,34 @@
         });
     }
 
-    customerOperations.getInstantRequestById = function(instantRequestId, next) {
-        database.InstantRequest.findOne({_id: mongoose.Types.ObjectId(instantRequestId)}).exec(function (err, result) {
-            if (err) {
+    customerOperations.getInstantRequestById = function(instantRequestId, next){
+        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).exec(function(err,result){
+            if(err){
                 next(err);
-            } else {
-                next(result);
+            }else{
+                next(null, result);
             }
         });
+    }
+
+    customerOperations.setInstantRequestNotFound = function(instantRequestId, next){
+        database.InstantRequest.update({_id : mongoose.Types.ObjectId(instantRequestId)},{finished : true, finishedDate : new Date()}).exec(function(err,updateResult){
+            if(err){
+
+            }else{
+
+            }
+        })
+    }
+
+    customerOperations.checkIfInstantRequestHasTaken = function(instantRequestId, next){
+        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId),found : true}).exec(function(err,result){
+            if(err){
+                next(err);
+            }else{
+                next(null, !result ? false : true);
+            }
+        })
     }
 
     customerOperations.sortPhotographersByTheirAcceptence = function(photographerIds, excludingInstantRequestIds, next){
