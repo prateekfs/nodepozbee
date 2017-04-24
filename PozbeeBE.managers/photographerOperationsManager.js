@@ -64,7 +64,15 @@
             }
         })
     }
-
+    photographerOperationsManager.getPhotographerUserId = function(photographerId, next){
+        database.User.findOne({photographer : photographerId}).exec(function(err,user){
+           if(err){
+               next(err);
+           } else{
+               next(null,user._id);
+           }
+        });
+    }
     photographerOperationsManager.checkIfPhotographerApplicationUpdated = function(userId, version, next){
         database.User.findOne({_id : userId}).populate("photographerApplications").exec(function(err,userResult){
             if(err){

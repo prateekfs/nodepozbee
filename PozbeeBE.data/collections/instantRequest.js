@@ -24,7 +24,7 @@
             askedLocation : {
                 type : [Number]
             }
-        }),
+        },{_id : false}),
         instantRequestSchema = new Schema({
             requestDate : {
                 type : Date,
@@ -34,6 +34,15 @@
                 type : Schema.Types.ObjectId,
                 required : true,
                 ref : "User"
+            },
+            categoryId : {
+                type : Schema.Types.ObjectId,
+                required : true,
+                ref : "Categories"
+            },
+            photographStyle : {
+                type : Number,
+                required : true
             },
             photographerRequests : {
                 type : [photographerRequestSchema]

@@ -86,7 +86,9 @@
                                 location : {
                                     type : "Point",
                                     coordinates : location
-                                }
+                                },
+                                categoryId : mongoose.Types.ObjectId(categoryId),
+                                photographStyle : photographStyle
                             });
                             _.each(photographerStatistics, function(ps,i){
                                 var photographerLocation = _.find(photographers,function(p){ return p._id == ps.photographerId }).location.coordinates
@@ -155,23 +157,57 @@
     }
 
     customerOperations.getInstantRequestById = function(instantRequestId, next){
-        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).exec(function(err,result){
+        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).populate("userId").populate("categoryId").exec(function(err,result){
             if(err){
                 next(err);
             }else{
-                next(null, result);
+                database.User.populate(result.userId, {"path":"socialUser"}, function(err,userOutput){
+                    if(userOutput){
+                        result.userId = userOutput;
+                        next(null, result);
+                    }else{
+                        next(result)
+                    }
+                })
+
             }
         });
     }
 
     customerOperations.setInstantRequestNotFound = function(instantRequestId, next){
-        database.InstantRequest.update({_id : mongoose.Types.ObjectId(instantRequestId)},{finished : true, finishedDate : new Date()}).exec(function(err,updateResult){
+        database.InstantRequest.update(
+            {
+                _id : instantRequestId
+            },
+            {
+                $pull:
+                {
+                    photographerRequests : { askedDate : null }
+                },
+                finished : true,
+                finishedDate : new Date()
+            }).exec(function(err,updateResult){
             if(err){
 
             }else{
 
             }
         })
+    }
+
+    customerOperations.setPhotographerAsked = function(instantRequestId, photographerId, next){
+        database.InstantRequest.update(
+            {
+                _id : instantRequestId,
+                "photographerRequests.photographerId" : photographerId},
+            {
+                $set :
+                {
+                    "photographerRequests.$.askedDate" : new Date()
+                }
+            }).exec(function(err,updateResult){
+
+            });
     }
 
     customerOperations.checkIfInstantRequestHasTaken = function(instantRequestId, next){
