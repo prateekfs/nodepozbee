@@ -64,8 +64,8 @@
       <file leaf-file-name="customerController.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/customerController.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.44785276">
-              <caret line="95" column="42" selection-start-line="95" selection-start-column="42" selection-end-line="95" selection-end-column="42" />
+            <state vertical-scroll-proportion="1.2990798">
+              <caret line="123" column="79" selection-start-line="123" selection-start-column="79" selection-end-line="123" selection-end-column="79" />
               <folding />
             </state>
           </provider>
@@ -515,27 +515,10 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/PozbeeBE.auth/auth.js</url>
-          <line>68</line>
-          <option name="timeStamp" value="573" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/PozbeeBE.managers/customerOperations.js</url>
-          <line>164</line>
-          <option name="timeStamp" value="583" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/PozbeeBE.managers/customerOperations.js</url>
-          <line>163</line>
-          <option name="timeStamp" value="584" />
-        </line-breakpoint>
-      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="590" />
+      <option name="time" value="592" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -905,8 +888,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/customerController.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44785276">
-          <caret line="95" column="42" selection-start-line="95" selection-start-column="42" selection-end-line="95" selection-end-column="42" />
+        <state vertical-scroll-proportion="1.2990798">
+          <caret line="123" column="79" selection-start-line="123" selection-start-column="79" selection-end-line="123" selection-end-column="79" />
           <folding />
         </state>
       </provider>

@@ -121,7 +121,7 @@
                             customerOperations.setInstantRequestNotFound(instantRequestId.toString(), function(err,result){
 
                             });
-                            customerController.io.of("customer").to(result.userId.toString()).emit("noPhotographerHasBeenFound");
+                            customerController.io.of("customer").to(result.userId._id.toString()).emit("noPhotographerHasBeenFound");
                         }
                     })
                 }
