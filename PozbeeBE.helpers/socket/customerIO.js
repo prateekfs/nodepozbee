@@ -5,6 +5,7 @@
     var database = require("../../PozbeeBE.data/database");
     var mongoose = require("mongoose");
     var async = require("async");
+    var photographerOperationsManager = require("../../PozbeeBE.managers/photographerOperationsManager");
 
     customerIO.init = function(app){
         var io = socket(app);
@@ -28,6 +29,20 @@
                             cb(operationResult.createSuccesResult());
 
                             s.emit("joinedSuccessFully", userResult.photographer.isActive, userResult.photographer.isOnline, function(data,test){
+                                photographerOperationsManager.checkWasntAsweredInstantRequestOfPhotographer(userResult.photographer._id, function(err,result){
+                                    if(!err && result){
+                                        var userInfo = {
+                                            instantRequestId : result._id.toString(),
+                                            name : result.userId.name,
+                                            category : result.categoryId.name,
+                                            photographStyle : result.photographStyle == 1 ? "Indoor" : "Outdoor",
+                                            pictureUri : result.userId.socialUser == null ? null : result.userId.socialUser.pictureUri,
+                                            location : result.location.coordinates,
+                                            endingDate : new Date(result.photographerOfInterest.askedDate.getTime() + 15000)
+                                        }
+                                        s.emit("newInstantPhotographerRequest",userInfo);
+                                    }
+                                });
                                 console.log(data);
                                 console.log(test);
                             })

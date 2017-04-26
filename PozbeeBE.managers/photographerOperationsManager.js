@@ -260,4 +260,61 @@
         })
 
     }
+
+    photographerOperationsManager.checkWasntAsweredInstantRequestOfPhotographer = function(photographerId, next){
+        database.InstantRequest.findOne({
+            finished : false,
+            photographerRequests :
+            {
+                $elemMatch : { photographerId : photographerId}
+            }
+        }).populate("userId").populate("categoryId").exec(function(err,result){
+            if(err){
+                next(err);
+            }else{
+                if(result && result.photographerRequests.length > 0){
+                    var photographerOfInterest = _.filter(result.photographerRequests, function(p){
+                        return p.photographerId.toString() === photographerId.toString()
+                    })[0];
+                    if (!photographerOfInterest.isAnswered && photographerOfInterest.askedDate > new Date(new Date().getTime() - 15000)){
+                        result = result.toObject()
+                        result.photographerOfInterest = photographerOfInterest;
+
+                        next(null,result);
+                    }else{
+                        next(null, null);
+                    }
+                }
+            }
+        })
+        //database.InstantRequest.aggregate(
+        //    {$match :
+        //    {
+        //        finished : false,
+        //        photographerRequests :
+        //        {
+        //            $elemMatch :{ photographerId : {$in : [photographerId]} }
+        //        }
+        //    }
+        //    },
+        //    {
+        //        $unwind : "$photographerRequests"
+        //    },
+        //    {
+        //        $match: {
+        //            "photographerRequests.photographerId" : photographerId
+        //        }
+        //    }).exec(function(err,result){
+        //        if(err){
+        //            next(err);
+        //        }else{
+        //            if (result.length > 0 && result[0].photographerRequests.askedDate > new Date(new Date().getTime() - 15000)){
+        //                database.InstantRequest.populate(result[0], "")
+        //                next(null,result[0]);
+        //            }else{
+        //                next(null,null);
+        //            }
+        //        }
+        //    });
+    }
 })(module.exports);

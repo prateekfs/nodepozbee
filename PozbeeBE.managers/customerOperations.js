@@ -57,7 +57,40 @@
                 });
             },
             function(cb){
+                database.InstantRequest.aggregate(
+                    {
+                        $match: {
+                            finished: false
+                        }
+                    },
+                    {
+                        $unwind: "$photographerRequests"
+                    },
+                    {
+                        $match: {
+                            $or: [
+                                {"photographerRequests.isAnswered": false},
+                                {"photographerRequests.isAnswered": true, "photographerRequests.isTaken": false}
+                            ]
+                        }
+                    },
+                    {
+                        $project: {
+                            "_id": 0,
+                            "photographerRequests.photographerId": 1
+                        }
+                    }
+                ).exec(function(err,photographerIds){
+                    if(err){
+                        cb(err);
+                    }else{
+                        cb(null, _.map(photographerIds, function(p){ return p.photographerRequests.photographerId }));
+                    }
+                })
+            },
+            function(excludingPhotographerIds, cb){
                 database.Photographer.find({
+                    _id : {$nin : excludingPhotographerIds},
                     location : {
                         $nearSphere : {
                             $geometry : {
@@ -161,6 +194,9 @@
             if(err){
                 next(err);
             }else{
+                if (!result){
+                    next(null,null);
+                }
                 database.User.populate(result.userId, {"path":"socialUser"}, function(err,userOutput){
                     if(userOutput){
                         result.userId = userOutput;

@@ -79,7 +79,7 @@
         router.get("/startCheckingPhotographers/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
             customerOperations.getInstantRequestById(instantRequestId, function(err,result){
-                if(err || result.finished){
+                if(err || !result || result.finished){
 
                 }else{
                     var timer;
@@ -90,10 +90,13 @@
                         }
                         photographerOperations.getPhotographerUserId(item.photographerId, function(err,userId){
                             var userInfo = {
+                                instantRequestId : result._id.toString(),
                                 name : result.userId.name,
                                 category : result.categoryId.name,
                                 photographStyle : result.photographStyle == 1 ? "Indoor" : "Outdoor",
-                                pictureUri : result.userId.socialUser == null ? null : result.userId.socialUser.pictureUri
+                                pictureUri : result.userId.socialUser == null ? null : result.userId.socialUser.pictureUri,
+                                location : result.location.coordinates
+
                             }
                             customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
                             customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequestId),item.photographerId, function(err,result){ });
@@ -110,7 +113,7 @@
                                         }
                                     }
                                 });
-                            },5000);
+                            },16000);
                         })
 
                     }, function(err){
@@ -129,6 +132,8 @@
 
             res.status(200).send(operationResult.createSuccesResult());
         });
+
+        router.get("/respondTo")
 
         return router
     }
