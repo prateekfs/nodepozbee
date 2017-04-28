@@ -96,45 +96,43 @@
         var timer;
         var found = false;
         async.eachSeries(_.filter(instantRequest.photographerRequests, function(p){ return !p.isAnswered }), function(item, callback){
-            if(found){
-                callback();
-            }
-            photographerOperations.getPhotographerUserId(item.photographerId, function(err,userId){
-                if(timer){
-                    clearTimeout(timer);
-                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
-                    global.instantRequestTimers.splice(index,1);
+            customerOperations.checkIfInstantRequestHasTaken(instantRequest._id, function(err,result){
+                if(err){
+                    callback(err);
+                }else{
+                    found = result;
                 }
-                var userInfo = {
-                    instantRequestId : instantRequest._id.toString(),
-                    name : instantRequest.userId.name,
-                    category : instantRequest.categoryId.name,
-                    photographStyle : instantRequest.photographStyle == 1 ? "Indoor" : "Outdoor",
-                    pictureUri : instantRequest.userId.socialUser == null ? null : instantRequest.userId.socialUser.pictureUri,
-                    location : instantRequest.location.coordinates
+                if(found){
+                    callback();
+                    return;
                 }
-                customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
-                customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err,result){ });
-                timer = setTimeout(function(){
-                    customerOperations.checkIfInstantRequestHasTaken(instantRequest._id, function(err,result){
+                photographerOperations.getPhotographerUserId(item.photographerId, function(err,userId){
+                    if(timer){
                         clearTimeout(timer);
-                        if(err){
-                            callback();
-                        }else{
-                            if(result === true){
-                                found = true
-                            }else{
-                                callback();
-                            }
-                        }
-                    });
-                },16000);
-                var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
-                if (index == -1){
-                    global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
-                }
+                        var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                        global.instantRequestTimers.splice(index,1);
+                    }
+                    var userInfo = {
+                        instantRequestId : instantRequest._id.toString(),
+                        name : instantRequest.userId.name,
+                        category : instantRequest.categoryId.name,
+                        photographStyle : instantRequest.photographStyle == 1 ? "Indoor" : "Outdoor",
+                        pictureUri : instantRequest.userId.socialUser == null ? null : instantRequest.userId.socialUser.pictureUri,
+                        location : instantRequest.location.coordinates
+                    }
+                    customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
+                    customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err,result){ });
+                    timer = setTimeout(function(){
+                        clearTimeout(timer);
+                        callback();
+                    },16000);
+                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                    if (index == -1){
+                        global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
+                    }
 
-            })
+                })
+            });
 
         }, function(err){
             if(timer){
