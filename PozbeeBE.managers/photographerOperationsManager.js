@@ -245,17 +245,17 @@
                             if (err) {
                                 wf(err);
                             } else {
-                                wf(null)
+                                wf(null, photographer._id);
                             }
                         });
                     }
                 })
             }
-        ], function(err){
+        ], function(err, photographerId){
             if(err){
                 next(err);
             }else{
-                next(null, operationResult.createSuccesResult());
+                next(null, operationResult.createSuccesResult(), photographerId);
             }
         })
 

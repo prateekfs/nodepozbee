@@ -74,7 +74,7 @@
         router.post("/uploadPhotographerLocation", passport.authenticate("bearer",{session : false}), function(req,res){
             var userId = req.user._id;
             var data = req.body;
-            photographerOperationsManager.updateLocationOfPhotographer(userId, data, function(err,result){
+            photographerOperationsManager.updateLocationOfPhotographer(userId, data, function(err,result, photographerId){
                 if(err){
                     res.status(444).send(err);
                 } else{
