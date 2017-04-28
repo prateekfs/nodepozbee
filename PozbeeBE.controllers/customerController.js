@@ -1,7 +1,7 @@
 (function(customerController){
     var database = require("../PozbeeBE.data/database");
     var mongoose = require("mongoose");
-    var customerOperations = require("../PozbeeBE.managers/customerOperations");
+    var customerOperations = require("../PozbeeBE.managers/customerOperationsManager");
     var photographerOperations = require("../PozbeeBE.managers/photographerOperationsManager");
     var passport = require("passport");
     var _ = require("underscore");
@@ -10,7 +10,6 @@
     var _ = require("underscore");
     var async = require("async");
     var operationResult = require("../PozbeeBE.helpers/operationResult");
-
     customerController.applyIOToManagers = function(io){
         customerOperations.io = io;
     }
@@ -78,64 +77,78 @@
 
         router.get("/startCheckingPhotographers/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
-            customerOperations.getInstantRequestById(instantRequestId, function(err,result){
-                if(err || !result || result.finished){
+            customerOperations.getInstantRequestById(instantRequestId, function(err,result) {
+                if (err || !result || result.finished) {
 
-                }else{
-                    var timer;
-                    var found = false;
-                    async.eachSeries(result.photographerRequests, function(item, callback){
-                        if(found){
-                            callback();
-                        }
-                        photographerOperations.getPhotographerUserId(item.photographerId, function(err,userId){
-                            var userInfo = {
-                                instantRequestId : result._id.toString(),
-                                name : result.userId.name,
-                                category : result.categoryId.name,
-                                photographStyle : result.photographStyle == 1 ? "Indoor" : "Outdoor",
-                                pictureUri : result.userId.socialUser == null ? null : result.userId.socialUser.pictureUri,
-                                location : result.location.coordinates
-
-                            }
-                            customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
-                            customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequestId),item.photographerId, function(err,result){ });
-                            timer = setTimeout(function(){
-                                customerOperations.checkIfInstantRequestHasTaken(instantRequestId, function(err,result){
-                                    clearTimeout(timer);
-                                    if(err){
-                                        callback();
-                                    }else{
-                                        if(result === true){
-                                            found = true
-                                        }else{
-                                            callback();
-                                        }
-                                    }
-                                });
-                            },16000);
-                        })
-
-                    }, function(err){
-                        if(timer){
-                            clearTimeout(timer);
-                        }
-                        if(!found){
-                            customerOperations.setInstantRequestNotFound(instantRequestId.toString(), function(err,result){
-
-                            });
-                            customerController.io.of("customer").to(result.userId._id.toString()).emit("noPhotographerHasBeenFound");
-                        }
-                    })
+                } else {
+                    customerController.nameThisMotherfucker(result);
                 }
-            })
-
+            });
             res.status(200).send(operationResult.createSuccesResult());
         });
 
-        router.get("/respondTo")
+
 
         return router
+    }
+
+    customerController.nameThisMotherfucker = function(instantRequest){
+        var timer;
+        var found = false;
+        async.eachSeries(_.filter(instantRequest.photographerRequests, function(p){ return !p.isAnswered }), function(item, callback){
+            if(found){
+                callback();
+            }
+            photographerOperations.getPhotographerUserId(item.photographerId, function(err,userId){
+                if(timer){
+                    clearTimeout(timer);
+                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                    global.instantRequestTimers.splice(index,1);
+                }
+                var userInfo = {
+                    instantRequestId : instantRequest._id.toString(),
+                    name : instantRequest.userId.name,
+                    category : instantRequest.categoryId.name,
+                    photographStyle : instantRequest.photographStyle == 1 ? "Indoor" : "Outdoor",
+                    pictureUri : instantRequest.userId.socialUser == null ? null : instantRequest.userId.socialUser.pictureUri,
+                    location : instantRequest.location.coordinates
+                }
+                customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
+                customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err,result){ });
+                timer = setTimeout(function(){
+                    customerOperations.checkIfInstantRequestHasTaken(instantRequest._id, function(err,result){
+                        clearTimeout(timer);
+                        if(err){
+                            callback();
+                        }else{
+                            if(result === true){
+                                found = true
+                            }else{
+                                callback();
+                            }
+                        }
+                    });
+                },16000);
+                var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                if (index == -1){
+                    global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
+                }
+
+            })
+
+        }, function(err){
+            if(timer){
+                clearTimeout(timer);
+                var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                global.instantRequestTimers.splice(index,1);
+            }
+            if(!found){
+                customerOperations.setInstantRequestNotFound(instantRequest._id.toString(), function(err,result){
+
+                });
+                customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("noPhotographerHasBeenFound");
+            }
+        })
     }
 
 })(module.exports);

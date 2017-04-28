@@ -19,3 +19,5 @@ GLOBAL.Dictionary = function Dictionary() {
 
 }
 global.METERS_PER_MILE = 1609.344;
+
+global.instantRequestTimers = [];

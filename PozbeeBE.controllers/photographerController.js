@@ -1,10 +1,12 @@
 (function(photographerController){
     var database = require("../PozbeeBE.data/database");
     var photographerOperationsManager = require("../PozbeeBE.managers/photographerOperationsManager");
+    var customerOperationsManager = require("../PozbeeBE.managers/customerOperationsManager");
     var passport = require("passport");
     var _ = require("underscore");
     var multer = require("multer");
     var upload = multer({dest : "./uploads"});
+    var mongoose = require("mongoose");
 
     photographerController.applyIOToManagers = function(io){
         photographerOperationsManager.io = io;
@@ -76,8 +78,35 @@
                 if(err){
                     res.status(444).send(err);
                 } else{
+                    photographerOperationsManager.checkIfPhotographerActiveInstantRequest(photographerId, function(err,instantRequestResult){
+                        if(!err && instantRequestResult){
+                            photographerController.io.of("customer").to(instantRequestResult.userId.toString()).emit("instantRequestPhotographerLocationChanged", data);
+                        }
+                    });
                     res.status(200).send(result);
                 }
+            });
+        });
+
+        router.post("/respondToPhotographerRequest",passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
+            var accepted = req.body.accepted == "1" ? true : false;
+            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
+            var userId = req.user._id;
+            photographerOperationsManager.respondToInstantPhotographerRequest(accepted,photographerId,instantRequestId,function(err,result){
+               if(err){
+                   req.status(444).send(err);
+               } else{
+                   var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequestId.toString() });
+                   if (index != -1){
+                       var obj = global.instantRequestTimers[index];
+                       obj.cb();
+                   }
+                    customerOperationsManager.getInstantRequestById(instantRequestId, function(err,result){
+
+                    })
+                   res.status(200).send(result);
+               }
             });
         });
 

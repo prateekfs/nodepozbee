@@ -287,34 +287,56 @@
                 }
             }
         })
-        //database.InstantRequest.aggregate(
-        //    {$match :
-        //    {
-        //        finished : false,
-        //        photographerRequests :
-        //        {
-        //            $elemMatch :{ photographerId : {$in : [photographerId]} }
-        //        }
-        //    }
-        //    },
-        //    {
-        //        $unwind : "$photographerRequests"
-        //    },
-        //    {
-        //        $match: {
-        //            "photographerRequests.photographerId" : photographerId
-        //        }
-        //    }).exec(function(err,result){
-        //        if(err){
-        //            next(err);
-        //        }else{
-        //            if (result.length > 0 && result[0].photographerRequests.askedDate > new Date(new Date().getTime() - 15000)){
-        //                database.InstantRequest.populate(result[0], "")
-        //                next(null,result[0]);
-        //            }else{
-        //                next(null,null);
-        //            }
-        //        }
-        //    });
+    }
+
+    photographerOperationsManager.checkIfPhotographerActiveInstantRequest = function(photographerId,next){
+        database.InstantRequest.findOne({
+            "photographerRequest.isTaken" : true,
+            "photographerRequest.photographerId" : photographerId,
+            finished : false,
+            found : true
+        }).exec(function(err,instantRequestResult){
+            if(err){
+                next(err);
+            }else{
+                next(null, instantRequestResult);
+            }
+        });
+    }
+
+    photographerOperationsManager.respondToInstantPhotographerRequest = function(accepted, photographerId, instantRequestId, next){
+
+        database.InstantRequest.update({
+            _id : instantRequestId,
+            "photographerRequests.photographerId" : photographerId
+        },{
+            $set : {
+                found : accepted,
+                "photographerRequests.$.isAnswered" : true,
+                "photographerRequests.$.isTaken" : accepted
+            }
+        }).exec(function(err,updateResult){
+            if(err){
+                next(err);
+            }else{
+                if(accepted && updateResult.nModified > 0){
+                    database.InstantRequest.findOneAndUpdate({
+                        _id : instantRequestId,
+                        $pull : {
+                            photographerRequests: {askedDate : null}
+                        }
+                    }).exec(function(err,res){
+                        if(err){
+                            next(null, true);
+                        }else{
+                            next(null, res);
+                        }
+                    })
+                }else{
+                    next(null, true);
+                }
+
+            }
+        })
     }
 })(module.exports);
