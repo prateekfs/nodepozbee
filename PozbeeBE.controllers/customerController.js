@@ -87,7 +87,31 @@
             res.status(200).send(operationResult.createSuccesResult());
         });
 
-
+        router.get("/cancelInstantRequest/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
+            customerOperations.cancelInstantRequest(instantRequestId, function(err,photographerIds, result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequestId.toString() });
+                    if (index != -1){
+                        var obj = global.instantRequestTimers[index];
+                        clearTimeout(obj.timer);
+                        obj.cb();
+                    }
+                    if(photographerIds){
+                        _.each(photographerIds, function(id){
+                            photographerOperations.getPhotographerUserId(id, function(err,userId){
+                                if(!err && userId){
+                                    customerController.io.of("photographer").to(userId.toString()).emit("instantRequestCancelled", instantRequestId);
+                                }
+                            })
+                        })
+                    }
+                    res.status(200).send(result);
+                }
+            });
+        });
 
         return router
     }
@@ -95,14 +119,16 @@
     customerController.nameThisMotherfucker = function(instantRequest){
         var timer;
         var found = false;
+        var cancelled = false;
         async.eachSeries(_.filter(instantRequest.photographerRequests, function(p){ return !p.isAnswered }), function(item, callback){
-            customerOperations.checkIfInstantRequestHasTaken(instantRequest._id, function(err,result){
+            customerOperations.checkIfInstantRequestHasTakenOrCancelled(instantRequest._id, function(err, hasFound, hasCancelled){
                 if(err){
                     callback(err);
                 }else{
-                    found = result;
+                    found = hasFound;
+                    cancelled = hasCancelled
                 }
-                if(found){
+                if(found || cancelled){
                     callback();
                     return;
                 }
@@ -125,7 +151,7 @@
                     timer = setTimeout(function(){
                         clearTimeout(timer);
                         callback();
-                    },16000);
+                    },30000);
                     var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
                     if (index == -1){
                         global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
@@ -133,18 +159,30 @@
 
                 })
             });
-
         }, function(err){
             if(timer){
                 clearTimeout(timer);
                 var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
-                global.instantRequestTimers.splice(index,1);
+                if (index != -1) {
+                    global.instantRequestTimers.splice(index, 1);
+                }
             }
-            if(!found){
-                customerOperations.setInstantRequestNotFound(instantRequest._id.toString(), function(err,result){
+            if(!found && !cancelled){
+                customerOperations.checkIfInstantRequestHasTakenOrCancelled(instantRequest._id, function(err, hasFound, hasCancelled){
+                   if(err){
 
+                   } else if(hasFound === false && hasCancelled === false){
+                       customerOperations.setInstantRequestNotFound(instantRequest._id.toString(), function(err,result){
+                            if(err){
+
+                            }else{
+                                customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("noPhotographerHasBeenFound");
+                            }
+                       });
+
+                   }
                 });
-                customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("noPhotographerHasBeenFound");
+
             }
         })
     }

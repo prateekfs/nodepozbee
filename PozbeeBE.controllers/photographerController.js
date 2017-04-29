@@ -90,7 +90,7 @@
 
         router.post("/respondToPhotographerRequest",passport.authenticate("bearer",{session : false}), function(req,res,next){
             var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
-            var accepted = req.body.accepted == "1" ? true : false;
+            var accepted = req.body.accepted == "1" ? true : (req.body.accepted === "true" ? true : false);
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
             var userId = req.user._id;
             photographerOperationsManager.respondToInstantPhotographerRequest(accepted,photographerId,instantRequestId,function(err,result){
@@ -100,6 +100,7 @@
                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequestId.toString() });
                    if (index != -1){
                        var obj = global.instantRequestTimers[index];
+                       clearTimeout(obj.timer);
                        obj.cb();
                    }
                     customerOperationsManager.getInstantRequestById(instantRequestId, function(err,result){

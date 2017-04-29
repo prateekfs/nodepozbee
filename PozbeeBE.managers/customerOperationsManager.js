@@ -246,14 +246,46 @@
             });
     }
 
-    customerOperations.checkIfInstantRequestHasTaken = function(instantRequestId, next){
-        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId),found : true}).exec(function(err,result){
+    customerOperations.checkIfInstantRequestHasTakenOrCancelled = function(instantRequestId, next){
+        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId),$or : [{found : true}, {cancelled : true}]}).exec(function(err,result){
             if(err){
                 next(err);
             }else{
-                next(null, !result ? false : true);
+                if(!result){
+                    next(null, false, false);
+                }else {
+                    next(null, result.found, result.cancelled);
+                }
             }
         })
+    }
+
+    customerOperations.cancelInstantRequest = function(instantRequestId, next){
+        database.InstantRequest.findOne({_id : instantRequestId}).exec(function(err,result){
+           if(err){
+               next(err);
+           }else if(result){
+               if (result.found && result.found === true){
+                   next(null, operationResult.createErrorResult());
+               }else{
+                   result.cancelled = true;
+                   result.finished = true;
+                   var photographerIds = _.map(result.photographerRequests, function(pr){ return pr.photographerId });
+                   var newPhotographerRequestsArray =  result.photographerRequests.filter(function(pr){
+                      return !pr.isAnswered
+                   });
+
+                   result.photographerRequests = newPhotographerRequestsArray
+                   result.save(function(err,saveResult){
+                       if(err){
+                           next(err);
+                       }else{
+                           next(null, photographerIds, operationResult.createSuccesResult());
+                       }
+                   })
+               }
+           }
+        });
     }
 
     customerOperations.sortPhotographersByTheirAcceptence = function(photographerIds, excludingInstantRequestIds, next){

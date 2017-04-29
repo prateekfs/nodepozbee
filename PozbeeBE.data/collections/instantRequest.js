@@ -68,6 +68,9 @@
                 coordinates : {
                     type : [Number]
                 }
+            },
+            cancelled : {
+                type : Boolean
             }
         },{collection : "instantRequest"});
         photographerRequestSchema.pre("validate", function(next){
