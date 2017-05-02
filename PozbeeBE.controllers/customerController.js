@@ -158,7 +158,7 @@
                     timer = setTimeout(function(){
                         clearTimeout(timer);
                         callback();
-                    },30000);
+                    },16000);
                     var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
                     if (index == -1){
                         global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
