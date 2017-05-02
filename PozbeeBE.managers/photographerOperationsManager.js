@@ -289,54 +289,83 @@
         })
     }
 
-    photographerOperationsManager.checkIfPhotographerActiveInstantRequest = function(photographerId,next){
+    photographerOperationsManager.checkIfPhotographerActiveInstantRequest = function(photographerId, locationData, next){
         database.InstantRequest.findOne({
-            "photographerRequest.isTaken" : true,
-            "photographerRequest.photographerId" : photographerId,
+            "photographerRequests.isTaken" : true,
+            "photographerRequests.photographerId" : photographerId,
             finished : false,
             found : true
         }).exec(function(err,instantRequestResult){
             if(err){
                 next(err);
             }else{
-                next(null, instantRequestResult);
+                if(!instantRequestResult){
+                    next(null,null);
+                    return;
+                }
+                var location = {
+                    type : "Point",
+                    coordinates : [locationData.longitude, locationData.latitude]
+                }
+                var pRequest = _.find(instantRequestResult.photographerRequests, function(pr){ return pr.photographerId.toString() === photographerId.toString() });
+                if (pRequest){
+
+                    pRequest.currentLocation = location;
+                    instantRequestResult.save(function(err,saveResult){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, instantRequestResult);
+                        }
+                    })
+                }
+
             }
         });
     }
 
     photographerOperationsManager.respondToInstantPhotographerRequest = function(accepted, photographerId, instantRequestId, next){
+        database.Photographer.findOne({
+            _id : photographerId
+        }).exec(function(err,photographerResult){
+           if(err){
+               next(err);
+           } else{
+               database.InstantRequest.update({
+                   _id : instantRequestId,
+                   "photographerRequests.photographerId" : photographerId
+               },{
+                   $set : {
+                       found : accepted,
+                       "photographerRequests.$.isAnswered" : true,
+                       "photographerRequests.$.isTaken" : accepted,
+                       "photographerRequests.$.currentLocation" : photographerResult.location
+                   }
+               }).exec(function(err,updateResult){
+                   if(err){
+                       next(err);
+                   }else{
+                       if(accepted && updateResult.nModified > 0){
+                           database.InstantRequest.findOneAndUpdate({
+                               _id : instantRequestId,
+                               $pull : {
+                                   photographerRequests: {askedDate : null}
+                               }
+                           }).exec(function(err,res){
+                               if(err){
+                                   next(null, true);
+                               }else{
+                                   next(null, res);
+                               }
+                           })
+                       }else{
+                           next(null, true);
+                       }
 
-        database.InstantRequest.update({
-            _id : instantRequestId,
-            "photographerRequests.photographerId" : photographerId
-        },{
-            $set : {
-                found : accepted,
-                "photographerRequests.$.isAnswered" : true,
-                "photographerRequests.$.isTaken" : accepted
-            }
-        }).exec(function(err,updateResult){
-            if(err){
-                next(err);
-            }else{
-                if(accepted && updateResult.nModified > 0){
-                    database.InstantRequest.findOneAndUpdate({
-                        _id : instantRequestId,
-                        $pull : {
-                            photographerRequests: {askedDate : null}
-                        }
-                    }).exec(function(err,res){
-                        if(err){
-                            next(null, true);
-                        }else{
-                            next(null, res);
-                        }
-                    })
-                }else{
-                    next(null, true);
-                }
+                   }
+               })
+           }
+        });
 
-            }
-        })
     }
 })(module.exports);

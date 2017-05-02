@@ -175,13 +175,73 @@
         });
     }
 
+    customerOperations.gatherInstantRequestInformationForCustomer = function(instantRequestId, next){
+        database.InstantRequest.findOne({
+            _id : instantRequestId
+        })
+            .populate("categoryId")
+            .exec(function(err,instantRequestResult){
+           if(err){
+               next(err);
+           } else{
+               var photographerRequest = _.find(instantRequestResult.photographerRequests, function(pr){ return pr.isTaken });
+               var photographerId = photographerRequest.photographerId;
+
+               database.User.findOne({
+                   photographer : photographerId
+               })
+                   .populate("socialUser")
+                   .populate("photographerApplications")
+                   .populate("photographer").exec(function(err,userResult){
+                   if(err){
+                       next(err);
+                   }else{
+                       if (!userResult){
+                           next(null, null);
+                       }else{
+                           var photographerName = userResult.name;
+                           var photographerNumber = userResult.phoneNumber;
+                           var photographerPhoto = userResult.socialUser != null ? userResult.socialUser.pictureUri : null;
+                           var category = instantRequestResult.categoryId.name + "-" + (instantRequestResult.photographStyle == 1 ? "Indoor" : "Outdoor") ;
+                           var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
+                           var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
+                           var instantRequestIdStr = instantRequestId.toString();
+                           var photographerLocation = photographerRequest.currentLocation.coordinates;
+
+                           next(null, {
+                               "photographerName" : photographerName,
+                               "photographerNumber" : photographerNumber,
+                               "photographerPhoto" : photographerPhoto,
+                               "category" : category,
+                               "cameraPhoto" : cameraPhoto,
+                               "instantRequestId" : instantRequestIdStr,
+                               "photographerLocation" : photographerLocation
+                           });
+                       }
+                   }
+               })
+           }
+        });
+    }
+
     customerOperations.checkIfUserHasUnfinishedInstantRequest = function(userId, next){
         database.InstantRequest.findOne({userId : userId, finished: false, finishedDate : null}).exec(function(err,result){
            if(err){
                next(err);
            } else{
                if(result){
-                   next(null,operationResult.createSuccesResult(result));
+                   if(result.found === true) {
+                       customerOperations.gatherInstantRequestInformationForCustomer(result._id, function (err, gatheredInfo) {
+                            var obj = result.toObject();
+                            if(gatheredInfo){
+
+                                obj.foundPhotographerInformation = gatheredInfo;
+                            }
+                            next(null, operationResult.createSuccesResult(obj));
+                       });
+                   }else {
+                       next(null, operationResult.createSuccesResult(result));
+                   }
                }else{
                    next(null, operationResult.createSuccesResult());
                }
@@ -209,6 +269,43 @@
             }
         });
     }
+    customerOperations.setInstantRequestStarted = function(instantRequestId, next){
+        database.InstantRequest.update(
+            {
+            _id : instantRequestId
+            },
+            {
+                $set : {
+                    started : true
+                }
+            }
+        ).exec(function(err,updateResult){
+               if(err){
+                   next(err);
+               } else{
+                if (updateResult != null && updateResult.nModified > 0){
+                    next(null);
+                }
+               }
+            });
+    }
+
+    customerOperations.checkIfInstantRequestStarted = function(instantRequestId, next){
+        database.InstantRequest.findOne({
+            _id : instantRequestId,
+            started : false
+        }).exec(function(err,instantRequest){
+            if(instantRequest){
+                instantRequest.finished = true;
+                instantRequest.finishedDate = new Date();
+                instantRequest.save(function(err,saveResult){
+                   if(err){
+
+                   }
+                });
+            }
+        });
+    }
 
     customerOperations.setInstantRequestNotFound = function(instantRequestId, next){
         database.InstantRequest.update(
@@ -224,9 +321,9 @@
                 finishedDate : new Date()
             }).exec(function(err,updateResult){
             if(err){
-
+                next(err);
             }else{
-
+                next(null)
             }
         })
     }
@@ -265,9 +362,9 @@
            if(err){
                next(err);
            }else if(result){
-               if (result.found && result.found === true){
-                   next(null, operationResult.createErrorResult());
-               }else{
+               //if (result.found && result.found === true){
+               //    next(null, operationResult.createErrorResult());
+               //}else{
                    result.cancelled = true;
                    result.finished = true;
                    var photographerIds = _.map(result.photographerRequests, function(pr){ return pr.photographerId });
@@ -283,7 +380,7 @@
                            next(null, photographerIds, operationResult.createSuccesResult());
                        }
                    })
-               }
+               //}
            }
         });
     }

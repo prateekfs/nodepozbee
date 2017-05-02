@@ -78,7 +78,7 @@
                 if(err){
                     res.status(444).send(err);
                 } else{
-                    photographerOperationsManager.checkIfPhotographerActiveInstantRequest(photographerId, function(err,instantRequestResult){
+                    photographerOperationsManager.checkIfPhotographerActiveInstantRequest(photographerId, req.body, function(err,instantRequestResult){
                         if(!err && instantRequestResult){
                             photographerController.io.of("customer").to(instantRequestResult.userId.toString()).emit("instantRequestPhotographerLocationChanged", data);
                         }

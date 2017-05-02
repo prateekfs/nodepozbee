@@ -23,6 +23,14 @@
             },
             askedLocation : {
                 type : [Number]
+            },
+            currentLocation : {
+                type : {
+                    type : String
+                },
+                coordinates : {
+                    type : [Number]
+                }
             }
         },{_id : false}),
         instantRequestSchema = new Schema({
@@ -54,6 +62,10 @@
             updated:{
                 type : Date
             },
+            started : {
+                type : Boolean,
+                required : true
+            },
             finished : {
                 type : Boolean,
                 required : true
@@ -80,6 +92,7 @@
         instantRequestSchema.pre("validate", function(next){
             if(!this.requestDate){ this.requestDate = new Date(); }
             if(!this.found){ this.found = false; }
+            if(!this.started) { this.started = false; }
             if(!this.finished) { this.finished = false; }
             if (!this.photographerRequests) {
                 this.photographerRequests = [];

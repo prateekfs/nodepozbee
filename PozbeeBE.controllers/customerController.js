@@ -47,7 +47,9 @@
                 if(err){
                     res.status(444).send(err);
                 } else{
-
+                    setTimeout(function(){
+                        customerOperations.checkIfInstantRequestStarted(result._id);
+                    },10000);
                     res.status(200).send(result);
                 }
             });
@@ -81,7 +83,12 @@
                 if (err || !result || result.finished) {
 
                 } else {
-                    customerController.nameThisMotherfucker(result);
+                    customerOperations.setInstantRequestStarted(instantRequestId,function(err){
+                        if(!err){
+                            customerController.nameThisMotherfucker(result);
+                        }
+                    })
+
                 }
             });
             res.status(200).send(operationResult.createSuccesResult());
@@ -179,12 +186,26 @@
                                 customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("noPhotographerHasBeenFound");
                             }
                        });
-
+                   } else if(hasFound === true){
+                       customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
+                           if(!err && gatheredInfo){
+                               customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
+                           }
+                       });
                    }
                 });
 
+            }else if(found === true){
+                customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
+                    if(!err && gatheredInfo){
+                        customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
+                    }
+                });
             }
         })
     }
 
+    function findPhotographer(){
+
+    }
 })(module.exports);
