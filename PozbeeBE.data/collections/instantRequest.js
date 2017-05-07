@@ -83,6 +83,21 @@
             },
             cancelled : {
                 type : Boolean
+            },
+            cancelledByPhotographer : {
+                type : Boolean
+            },
+            arrived : {
+                type : Boolean
+            },
+            arrivedDate : {
+                type : Date
+            },
+            shootingStarted : {
+                type : Boolean
+            },
+            shootingStartedDate : {
+                type : Date
             }
         },{collection : "instantRequest"});
         photographerRequestSchema.pre("validate", function(next){

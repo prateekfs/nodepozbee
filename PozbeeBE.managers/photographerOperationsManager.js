@@ -289,7 +289,36 @@
         })
     }
 
-    photographerOperationsManager.checkIfPhotographerActiveInstantRequest = function(photographerId, locationData, next){
+    photographerOperationsManager.checkIfPhotographerHasActiveInstantRequest = function(photographerId, next){
+        database.InstantRequest.findOne({
+            "photographerRequests.isTaken" : true,
+            "photographerRequests.photographerId" : photographerId,
+            finished : false,
+            found : true})
+            .populate("userId")
+            .populate("categoryId")
+            .exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    if (!result){
+                        next(null,operationResult.createSuccesResult());
+                        return;
+                    }
+                    var obj = result.toObject();
+                    database.User.populate(result.userId, {"path":"socialUser"}, function(err,userOutput){
+                        if(userOutput){
+                            obj.userId = userOutput.toObject();
+                            next(null, operationResult.createSuccesResult(obj));
+                        }else{
+                            next(null,  operationResult.createSuccesResult(obj));
+                        }
+                    });
+                }
+        });
+    }
+
+    photographerOperationsManager.updatePhotographersActiveInstantRequest = function(photographerId, locationData, next){
         database.InstantRequest.findOne({
             "photographerRequests.isTaken" : true,
             "photographerRequests.photographerId" : photographerId,
@@ -346,16 +375,33 @@
                        next(err);
                    }else{
                        if(accepted && updateResult.nModified > 0){
-                           database.InstantRequest.findOneAndUpdate({
-                               _id : instantRequestId,
-                               $pull : {
-                                   photographerRequests: {askedDate : null}
+                           database.InstantRequest.findOneAndUpdate(
+                               {
+                                   _id : instantRequestId },
+                               {
+                                   $pull : {
+                                    photographerRequests: {askedDate : null}
+                                   }
+                               },{
+                                   new : true
                                }
-                           }).exec(function(err,res){
+                           )
+                               .populate("userId")
+                               .populate("categoryId")
+                               .exec(function(err,res){
                                if(err){
-                                   next(null, true);
+                                   next(null, operationResult.createSuccesResult());
                                }else{
-                                   next(null, res);
+                                   database.User.populate(res.userId, {"path":"socialUser"}, function(err,userOutput){
+                                       if(userOutput){
+                                           var obj = res.toObject();
+                                           obj.userId = userOutput.toObject();
+                                           next(null, operationResult.createSuccesResult(obj));
+                                       }else{
+                                           var obj = res.toObject();
+                                           next(null, operationResult.createSuccesResult(obj));
+                                       }
+                                   });
                                }
                            })
                        }else{
@@ -366,6 +412,5 @@
                })
            }
         });
-
     }
 })(module.exports);

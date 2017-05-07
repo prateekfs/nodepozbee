@@ -78,7 +78,7 @@
                 if(err){
                     res.status(444).send(err);
                 } else{
-                    photographerOperationsManager.checkIfPhotographerActiveInstantRequest(photographerId, req.body, function(err,instantRequestResult){
+                    photographerOperationsManager.updatePhotographersActiveInstantRequest(photographerId, req.body, function(err,instantRequestResult){
                         if(!err && instantRequestResult){
                             photographerController.io.of("customer").to(instantRequestResult.userId.toString()).emit("instantRequestPhotographerLocationChanged", data);
                         }
@@ -103,14 +103,22 @@
                        clearTimeout(obj.timer);
                        obj.cb();
                    }
-                    customerOperationsManager.getInstantRequestById(instantRequestId, function(err,result){
 
-                    })
                    res.status(200).send(result);
                }
             });
         });
 
+        router.get("/checkIfPhotographerHasActiveInstantRequest/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.params.photographerId);
+            photographerOperationsManager.checkIfPhotographerHasActiveInstantRequest(photographerId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
         return router;
     }
 })(module.exports);

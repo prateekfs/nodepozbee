@@ -70,7 +70,7 @@
                         $match: {
                             $or: [
                                 {"photographerRequests.isAnswered": false},
-                                {"photographerRequests.isAnswered": true, "photographerRequests.isTaken": false}
+                                {"photographerRequests.isAnswered": true, "photographerRequests.isTaken": true}
                             ]
                         }
                     },
@@ -256,13 +256,15 @@
             }else{
                 if (!result){
                     next(null,null);
+                    return;
                 }
+                var obj = result.toObject();
                 database.User.populate(result.userId, {"path":"socialUser"}, function(err,userOutput){
                     if(userOutput){
-                        result.userId = userOutput;
-                        next(null, result);
+                        obj.userId = userOutput.toObject();
+                        next(null, obj);
                     }else{
-                        next(result)
+                        next(null, obj);
                     }
                 })
 

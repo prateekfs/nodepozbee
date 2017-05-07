@@ -153,7 +153,7 @@
                         pictureUri : instantRequest.userId.socialUser == null ? null : instantRequest.userId.socialUser.pictureUri,
                         location : instantRequest.location.coordinates
                     }
-                    customerController.io.of("photographer").to(userId.toString()).emit("newInstantPhotographerRequest",userInfo);
+                    customerController.io.of("photographer").to(userId  .toString()).emit("newInstantPhotographerRequest",userInfo);
                     customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err,result){ });
                     timer = setTimeout(function(){
                         clearTimeout(timer);
