@@ -97,7 +97,7 @@
                if(err){
                    req.status(444).send(err);
                } else{
-                   var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequestId.toString() });
+                   var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id === instantRequestId.toString() });
                    if (index != -1){
                        var obj = global.instantRequestTimers[index];
                        clearTimeout(obj.timer);

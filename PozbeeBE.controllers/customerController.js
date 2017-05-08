@@ -159,7 +159,7 @@
                         clearTimeout(timer);
                         callback();
                     },16000);
-                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id = instantRequest._id.toString() });
+                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id === instantRequest._id.toString() });
                     if (index == -1){
                         global.instantRequestTimers.push({"id" : instantRequest._id.toString(), "timer": timer, "cb" : callback});
                     }
