@@ -69,8 +69,25 @@
                     {
                         $match: {
                             $or: [
-                                //{"photographerRequests.isAnswered": false},
-                                {"photographerRequests.isAnswered": true, "photographerRequests.isTaken": true}
+                                {
+                                    $and : [
+                                        {"photographerRequests.isTaken": false},
+                                        {
+                                            "photographerRequests.askedDate" : {$ne : null}
+                                        },
+                                        {
+                                            "photographerRequests.askedDate" : {
+                                                $gte : new Date(new Date().getTime() - 15000)
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    $and : [
+                                        {"photographerRequests.isAnswered": true},
+                                        {"photographerRequests.isTaken": true}
+                                    ]
+                                }
                             ]
                         }
                     },
