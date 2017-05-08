@@ -291,7 +291,6 @@
 
     photographerOperationsManager.checkIfPhotographerHasActiveInstantRequest = function(photographerId, next){
         database.InstantRequest.findOne({
-            "photographerRequests.isTaken" : true,
             "photographerRequests.photographerId" : photographerId,
             finished : false,
             found : true})
@@ -305,15 +304,21 @@
                         next(null,operationResult.createSuccesResult());
                         return;
                     }
-                    var obj = result.toObject();
-                    database.User.populate(result.userId, {"path":"socialUser"}, function(err,userOutput){
-                        if(userOutput){
-                            obj.userId = userOutput.toObject();
-                            next(null, operationResult.createSuccesResult(obj));
-                        }else{
-                            next(null,  operationResult.createSuccesResult(obj));
-                        }
-                    });
+                    var pRequest = _.find(result.photographerRequests, function(pr){ return pr.photographerId.toString() === photographerId.toString() });
+                    if (pRequest.isTaken){
+                        var obj = result.toObject();
+                        database.User.populate(result.userId, {"path": "socialUser"}, function (err, userOutput) {
+                            if (userOutput) {
+                                obj.userId = userOutput.toObject();
+                                next(null, operationResult.createSuccesResult(obj));
+                            } else {
+                                next(null, operationResult.createSuccesResult(obj));
+                            }
+                        });
+                    }else{
+                        next(null,operationResult.createSuccesResult());
+                        return;
+                    }
                 }
         });
     }

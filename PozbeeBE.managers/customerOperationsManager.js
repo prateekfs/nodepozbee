@@ -69,7 +69,7 @@
                     {
                         $match: {
                             $or: [
-                                {"photographerRequests.isAnswered": false},
+                                //{"photographerRequests.isAnswered": false},
                                 {"photographerRequests.isAnswered": true, "photographerRequests.isTaken": true}
                             ]
                         }
