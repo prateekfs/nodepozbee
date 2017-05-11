@@ -276,7 +276,7 @@
                     var photographerOfInterest = _.filter(result.photographerRequests, function(p){
                         return p.photographerId.toString() === photographerId.toString()
                     })[0];
-                    if (!photographerOfInterest.isAnswered && photographerOfInterest.askedDate > new Date(new Date().getTime() - 15000)){
+                    if (photographerOfInterest.isAnswered === false && photographerOfInterest.askedDate > new Date(new Date().getTime() - 15000)){
                         result = result.toObject()
                         result.photographerOfInterest = photographerOfInterest;
 
