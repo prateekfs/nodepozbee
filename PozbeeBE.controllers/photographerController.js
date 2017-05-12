@@ -95,7 +95,7 @@
             var userId = req.user._id;
             photographerOperationsManager.respondToInstantPhotographerRequest(accepted,photographerId,instantRequestId,function(err,result){
                if(err){
-                   req.status(444).send(err);
+                   res.status(444).send(err);
                } else{
                    var index = _.findIndex(global.instantRequestTimers, function(timer){ return timer.id === instantRequestId.toString() });
                    if (index != -1){
@@ -107,6 +107,18 @@
                    res.status(200).send(result);
                }
             });
+        });
+
+        router.get("/cancelInstantRequest/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
+            photographerOperationsManager.cancelInstantRequest(req.user, instantRequestId, function(err, userId, result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    photographerController.io.of("customer").to(userId.toString()).emit("instantRequestCancelled", instantRequestId.toString());
+                    res.status(200).send(result);
+                }
+            })
         });
 
         router.get("/checkIfPhotographerHasActiveInstantRequest/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res,next){

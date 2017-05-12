@@ -34,6 +34,7 @@ app.use('/', index);
 app.use('/users', users);
 //
 app.use('/api/images', express.static('public/images'));
+app.use('/api/uploads', express.static('uploads'));
 
 app.controllers = require("./PozbeeBE.controllers");
 app.controllers.init(app);

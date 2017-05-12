@@ -222,6 +222,7 @@
                            var category = instantRequestResult.categoryId.name + "-" + (instantRequestResult.photographStyle == 1 ? "Indoor" : "Outdoor") ;
                            var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
                            var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
+                           var cameraModel = appliedApplication.cameraModel;
                            var instantRequestIdStr = instantRequestId.toString();
                            var photographerLocation = photographerRequest.currentLocation.coordinates;
 
@@ -232,7 +233,8 @@
                                "category" : category,
                                "cameraPhoto" : cameraPhoto,
                                "instantRequestId" : instantRequestIdStr,
-                               "photographerLocation" : photographerLocation
+                               "photographerLocation" : photographerLocation,
+                               "cameraModel" : cameraModel
                            });
                        }
                    }
@@ -386,6 +388,7 @@
                //}else{
                    result.cancelled = true;
                    result.finished = true;
+                   result.finishedDate = new Date();
                    var photographerIds = _.map(result.photographerRequests, function(pr){ return pr.photographerId });
                    var newPhotographerRequestsArray =  result.photographerRequests.filter(function(pr){
                       return !pr.isAnswered

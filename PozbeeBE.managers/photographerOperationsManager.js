@@ -358,6 +358,35 @@
         });
     }
 
+    photographerOperationsManager.cancelInstantRequest = function(user, instantRequestId, next){
+        database.InstantRequest.findOne({_id : instantRequestId}).exec(function(err,result){
+           if(err){
+               next(err);
+           } else{
+               var takenPr = _.find(result.photographerRequests, function(pr){ return pr.isTaken });
+               if (takenPr){
+                   if (takenPr.photographerId.toString() === user.photographer.toString()){
+                       result.cancelled = true;
+                       result.cancelledByPhotographer = true;
+                       result.finished = true;
+                       result.finishedDate = new Date();
+                       result.save(function(err,saveResult){
+                          if(err){
+                              next(err);
+                          } else{
+                              next(null, result.userId, operationResult.createSuccesResult());
+                          }
+                       });
+                   }else{
+                       next(operationResult.createErrorResult("Something went wrong"));
+                   }
+               }else{
+                   next(operationResult.createErrorResult("Something went wrong"));
+               }
+           }
+        });
+    }
+
     photographerOperationsManager.respondToInstantPhotographerRequest = function(accepted, photographerId, instantRequestId, next){
         database.Photographer.findOne({
             _id : photographerId
