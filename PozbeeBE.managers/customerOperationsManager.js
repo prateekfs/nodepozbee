@@ -269,7 +269,7 @@
     }
 
     customerOperations.getInstantRequestById = function(instantRequestId, next){
-        database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).populate("userId").populate("categoryId").exec(function(err,result){
+        database.InstantRequest.findOne({_id : instantRequestId}).populate("userId").populate("categoryId").exec(function(err,result){
             if(err){
                 next(err);
             }else{
@@ -360,7 +360,7 @@
                     "photographerRequests.$.askedDate" : new Date()
                 }
             }).exec(function(err,updateResult){
-
+                next(err);
             });
     }
 

@@ -7,6 +7,7 @@
     var multer = require("multer");
     var upload = multer({dest : "./uploads"});
     var mongoose = require("mongoose");
+    var iosNotification;
 
     photographerController.applyIOToManagers = function(io){
         photographerOperationsManager.io = io;
@@ -131,6 +132,10 @@
                 }
             })
         });
+        router.get("/informCustomer",passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var userId = mongoose.Types.ObjectId(req.params.userId);
+            photographerController.iosNotification.sendNotification(userId, "Photographer is coming");
+        })
         return router;
     }
 })(module.exports);

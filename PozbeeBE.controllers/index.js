@@ -1,4 +1,5 @@
 (function(controllers){
+    var iosNotification = require("../PozbeeBE.helpers/notification/iosNotification");
     var express = require('express');
     var router = express.Router();
     var clientController = require("./clientController");
@@ -6,6 +7,10 @@
     var photographerController = require("./photographerController");
     var applyPhotographerController = require("./applyPhotographerController");
     var customerController = require("./customerController");
+
+    photographerController.iosNotification = iosNotification;
+    customerController.iosNotification = iosNotification;
+
     controllers.init = function(app, io){
         app.use("/api/client", clientController.init(router));
         app.use("/api/users", userController.init(router));

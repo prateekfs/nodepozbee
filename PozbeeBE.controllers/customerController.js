@@ -10,6 +10,8 @@
     var _ = require("underscore");
     var async = require("async");
     var operationResult = require("../PozbeeBE.helpers/operationResult");
+    var iosNotification;
+
     customerController.applyIOToManagers = function(io){
         customerOperations.io = io;
     }
@@ -154,7 +156,11 @@
                         location : instantRequest.location.coordinates
                     }
                     customerController.io.of("photographer").to(userId  .toString()).emit("newInstantPhotographerRequest",userInfo);
-                    customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err,result){ });
+                    customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err){
+                        if(!err){
+                            customerController.iosNotification.sendNotification(userId, "You have a instant photographer request. Answer in 15 seconds to get");
+                        }
+                    });
                     timer = setTimeout(function(){
                         clearTimeout(timer);
                         callback();
