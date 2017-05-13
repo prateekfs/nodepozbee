@@ -133,7 +133,7 @@
             })
         });
         router.get("/informCustomer",passport.authenticate("bearer", {session : false}), function(req,res,next){
-            var userId = mongoose.Types.ObjectId(req.params.userId);
+            var userId = mongoose.Types.ObjectId(req.query.userId);
             photographerController.iosNotification.sendNotification(userId, "Photographer is coming");
         })
         return router;
