@@ -59,4 +59,18 @@
         });
     }
 
+    userOperationsManager.registerRemoteNotificationToken = function(deviceId, remoteNotificationToken, next){
+        database.Device.update({_id: deviceId}, {$set : {pushNotificationToken : remoteNotificationToken}}).exec(function(err,result){
+          if(err){
+              next(err);
+          }  else{
+              if (result.nModified > 0){
+                  next(null, operationResult.createSuccesResult());
+              }else{
+                  next(null, operationResult.createErrorResult());
+              }
+          }
+        })
+    }
+
 })(module.exports)

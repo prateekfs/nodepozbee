@@ -4,7 +4,7 @@
     var loginOperationsManager = require("../PozbeeBE.managers/loginOperationsManager");
     var userOperationsManager = require("../PozbeeBE.managers/userOperationsManager");
     var passport = require("passport");
-
+    var mongoose = require("mongoose");
     userController.init = function(router){
         router.get("/registerPhone/:phoneNumber", function(req,res,next){
             var phoneNumber = req.params.phoneNumber;
@@ -114,6 +114,20 @@
                }
             });
         });
+
+        router.get("/registerRemoteNotificationToken", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var deviceId = mongoose.Types.ObjectId(req.query.deviceId);
+            var remoteNotificationToken = req.query.notificationToken;
+
+            userOperationsManager.registerRemoteNotificationToken(deviceId, remoteNotificationToken, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            });
+        });
+
         //app.get("/campaign/getUserPopulationRange/:venueId/:meters",
         //    passport.authenticate("bearer", { session : false }),
         //    mustbe.authorized("roles.pusher",

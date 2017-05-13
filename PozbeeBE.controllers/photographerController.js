@@ -109,7 +109,7 @@
             });
         });
 
-        router.get("/cancelInstantRequest/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
+        router.get("/photographerCancelInstantRequest/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
             photographerOperationsManager.cancelInstantRequest(req.user, instantRequestId, function(err, userId, result){
                 if(err){

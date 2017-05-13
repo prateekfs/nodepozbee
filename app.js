@@ -9,7 +9,7 @@ var database = require("./PozbeeBE.data/database");
 require("./PozbeeBE.helpers/utils");
 var index = require('./routes/index');
 var users = require('./routes/users');
-
+var iosNotifications = require("./PozbeeBE.helpers/notification/iosNotification");
 var app = express();
 
 // view engine setup
