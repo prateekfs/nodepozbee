@@ -447,4 +447,30 @@
            }
         });
     }
+
+    photographerOperationsManager.confirmArrivalOfPhotographer = function(instantRequestId, next){
+     database.InstantRequest.findOneAndUpdate(
+         {
+            _id : instantRequestId
+         }, {
+             $set : {
+                 arrived : true,
+                 arrivedDate : new Date()
+             }
+         }, {
+             new: true
+         }).exec(function(err,result){
+             if(err){
+                 next(err);
+             }else{
+                 var obj = {
+                     arrived : result.arrived,
+                     arrivedDate : result.arrivedDate,
+                     userId : result.userId
+                 };
+
+                 next(null, operationResult.createSuccesResult(obj));
+             }
+         })
+    }
 })(module.exports);
