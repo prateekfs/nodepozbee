@@ -117,6 +117,7 @@
                     res.status(444).send(err);
                 }else{
                     photographerController.io.of("customer").to(userId.toString()).emit("instantRequestCancelled", instantRequestId.toString());
+                    photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the request.");
                     res.status(200).send(result);
                 }
             })

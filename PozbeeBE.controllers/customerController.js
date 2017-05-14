@@ -113,6 +113,7 @@
                             photographerOperations.getPhotographerUserId(id, function(err,userId){
                                 if(!err && userId){
                                     customerController.io.of("photographer").to(userId.toString()).emit("instantRequestCancelled", instantRequestId);
+                                    customerController.iosNotification.sendNotification(userId, "Customer cancelled the request");
                                 }
                             })
                         })
@@ -196,6 +197,7 @@
                        customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
                            if(!err && gatheredInfo){
                                customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
+                               customerController.iosNotification.sendNotification(instantRequest.userId._id, "Photographer found and is on it's way for your request");
                            }
                        });
                    }
@@ -205,6 +207,7 @@
                 customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
                     if(!err && gatheredInfo){
                         customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
+                        photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the request.");
                     }
                 });
             }
