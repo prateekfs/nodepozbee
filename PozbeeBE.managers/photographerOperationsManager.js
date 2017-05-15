@@ -473,4 +473,30 @@
              }
          })
     }
+
+    photographerOperationsManager.startPhotoShooting = function(instantRequestId, next){
+        database.InstantRequest.findOneAndUpdate(
+            {
+                _id : instantRequestId
+            }, {
+                $set : {
+                    shootingStarted : true,
+                    shootingStartedDate : new Date()
+                }
+            }, {
+                new: true
+            }).exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    var obj = {
+                        shootingStarted : result.shootingStarted,
+                        shootingStartedDate : result.shootingStartedDate,
+                        userId : result.userId
+                    };
+
+                    next(null, operationResult.createSuccesResult(obj));
+                }
+            })
+    }
 })(module.exports);

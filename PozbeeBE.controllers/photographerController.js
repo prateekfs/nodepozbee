@@ -151,6 +151,22 @@
                 }
             });
         });
+        router.get("/startPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
+            photographerOperationsManager.startPhotoShooting(instantRequestId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    var obj = result.resultObject;
+                    photographerController.io.of("customer").to(obj.userId.toString()).emit("photoShootingHasBeenStarted", obj);
+                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been started!");
+
+                    res.status(200).send(result);
+                }
+            });
+        });
+
+
 
         return router;
     }
