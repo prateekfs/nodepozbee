@@ -244,7 +244,13 @@
     }
 
     customerOperations.checkIfUserHasUnfinishedInstantRequest = function(userId, next){
-        database.InstantRequest.findOne({userId : userId, finished: false, finishedDate : null}).exec(function(err,result){
+        database.InstantRequest.findOne({
+            userId: userId,
+            $or: [
+                {finished: false, finishedDate : null},
+                {finished : true, userConfirmed : false, cancelled : false}
+            ]
+            }).exec(function(err,result){
            if(err){
                next(err);
            } else{

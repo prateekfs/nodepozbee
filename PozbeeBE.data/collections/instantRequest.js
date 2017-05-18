@@ -98,6 +98,9 @@
             },
             shootingStartedDate : {
                 type : Date
+            },
+            userConfirmed : {
+                type : Boolean
             }
         },{collection : "instantRequest"});
         photographerRequestSchema.pre("validate", function(next){
@@ -109,6 +112,7 @@
             if(!this.found){ this.found = false; }
             if(!this.started) { this.started = false; }
             if(!this.finished) { this.finished = false; }
+            if(!this.userConfirmed) {this.userConfirmed = false;}
             if (!this.photographerRequests) {
                 this.photographerRequests = [];
             }

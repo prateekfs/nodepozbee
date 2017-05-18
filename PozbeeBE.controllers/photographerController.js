@@ -166,6 +166,20 @@
             });
         });
 
+        router.get("/finishPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
+            photographerOperationsManager.finishPhotoShooting(instantRequestId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    var obj = result.resultObject;
+                    photographerController.io.of("customer").to(obj.userId.toString()).emit("photoShootingHasBeenFinished", obj);
+                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been finished!");
+
+                    res.status(200).send(result);
+                }
+            });
+        });
 
 
         return router;
