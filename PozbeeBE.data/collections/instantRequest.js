@@ -112,7 +112,8 @@
             if(!this.found){ this.found = false; }
             if(!this.started) { this.started = false; }
             if(!this.finished) { this.finished = false; }
-            if(!this.userConfirmed) {this.userConfirmed = false;}
+            if(!this.cancelled) { this.cancelled = false; }
+            if(!this.userConfirmed) { this.userConfirmed = false; }
             if (!this.photographerRequests) {
                 this.photographerRequests = [];
             }
