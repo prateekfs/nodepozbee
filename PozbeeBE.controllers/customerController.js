@@ -96,6 +96,17 @@
             res.status(200).send(operationResult.createSuccesResult());
         });
 
+        router.get("/confirmFinishedPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
+            customerOperations.confirmFinishedPhotoShooting(instantRequestId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            });
+        });
+
         router.get("/cancelInstantRequest/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
             customerOperations.cancelInstantRequest(instantRequestId, function(err,photographerIds, result){

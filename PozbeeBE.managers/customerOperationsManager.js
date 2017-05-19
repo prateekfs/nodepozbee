@@ -384,6 +384,23 @@
         })
     }
 
+    customerOperations.confirmFinishedPhotoShooting = function(instantRequestId, next){
+        database.InstantRequest.update({
+            _id : instantRequestId
+        },{
+            $set :
+            {
+                userConfirmed : true
+            }
+        }).exec(function(err,result){
+            if(err){
+                next(err);
+            }else{
+                next(null, operationResult.createSuccesResult());
+            }
+        })
+    }
+
     customerOperations.cancelInstantRequest = function(instantRequestId, next){
         database.InstantRequest.findOne({_id : instantRequestId}).exec(function(err,result){
            if(err){
