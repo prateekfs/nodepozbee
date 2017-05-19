@@ -248,7 +248,7 @@
             userId: userId,
             $or: [
                 {finished: false, finishedDate : null},
-                {finished : true, userConfirmed : false, cancelled : false}
+                {found : true, finished : true, userConfirmed : false, cancelled : false}
             ]
             }).exec(function(err,result){
            if(err){
