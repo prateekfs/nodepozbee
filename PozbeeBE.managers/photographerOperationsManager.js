@@ -516,8 +516,8 @@
                     next(err);
                 }else{
                     var obj = {
-                        finished : result.shootingStarted,
-                        finishedDate : result.shootingStartedDate,
+                        finished : result.finished,
+                        finishedDate : result.finishedDate,
                         userId : result.userId
                     };
 
