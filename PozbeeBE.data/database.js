@@ -18,4 +18,5 @@
     database.Category = require("./collections/categories").Model;
     database.Photographer = require("./collections/photographer").Model;
     database.InstantRequest = require("./collections/instantRequest").Model;
+    database.WatermarkPhotos = require("./collections/watermarkPhotos").Model;
 })(module.exports);

@@ -5,9 +5,10 @@
     var passport = require("passport");
     var _ = require("underscore");
     var multer = require("multer");
-    var upload = multer({dest : "./uploads"});
+    var upload = multer({dest : "./uploads/initialPhotos"});
     var mongoose = require("mongoose");
     var iosNotification;
+
 
     photographerController.applyIOToManagers = function(io){
         photographerOperationsManager.io = io;
@@ -181,6 +182,30 @@
             });
         });
 
+        router.get("/getPhotographerInstantRequestsHistory", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.query.photographerId);
+            var skipCount = Number(req.query.skip);
+            var limitCount = Number(req.query.limit);
+            photographerOperationsManager.getPhotographerInstantRequestsHistory(photographerId, skipCount, limitCount, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+        var cpUpload = upload.fields([{ name: 'initialPhotos', mimeType : "jpeg"}]);
+        router.post("/uploadInitialPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
+            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
+            var photos = req.files.initialPhotos;
+            photographerOperationsManager.uploadInitialPhotosOfInstantRequest(instantRequestId,photos, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            });
+        })
 
         return router;
     }

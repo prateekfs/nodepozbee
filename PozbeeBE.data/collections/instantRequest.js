@@ -101,6 +101,24 @@
             },
             userConfirmed : {
                 type : Boolean
+            },
+            nonEditedPhotosAdded :{
+                type : Boolean
+            },
+            nonEditedPhotosAddedDate : {
+                type : Date
+            },
+            userChoosed : {
+                type : Boolean
+            },
+            userChoosedDate: {
+                type : Date
+            },
+            editedPhotosAdded : {
+                type : Boolean
+            },
+            editedPhotosAddedDate : {
+                type : Date
             }
         },{collection : "instantRequest"});
         photographerRequestSchema.pre("validate", function(next){
@@ -114,6 +132,13 @@
             if(!this.finished) { this.finished = false; }
             if(!this.cancelled) { this.cancelled = false; }
             if(!this.userConfirmed) { this.userConfirmed = false; }
+            if(!this.nonEditedPhotosAdded) { this.nonEditedPhotosAdded = false; }
+            if(!this.nonEditedPhotosAddedDate) { this.nonEditedPhotosAddedDate = null; }
+            if(!this.userChoosed) { this.userChoosed = false; }
+            if(!this.userChoosedDate) { this.userChoosedDate = null; }
+            if(!this.editedPhotosAdded) { this.editedPhotosAdded = false; }
+            if(!this.editedPhotosAddedDate) { this.editedPhotosAddedDate = null; }
+
             if (!this.photographerRequests) {
                 this.photographerRequests = [];
             }

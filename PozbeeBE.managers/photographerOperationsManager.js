@@ -4,50 +4,53 @@
     var mongoose = require("mongoose");
     var _ = require("underscore");
     var async = require("async");
+    var watermark = require('image-watermark');
+    var pathResolve = require("path").resolve;
+
     photographerOperationsManager.createNewApplication = function(userId, data, next){
         database.User.findOne({_id : mongoose.Types.ObjectId(userId)}).exec(function(err,userResult){
-           if(err){
-               next(err);
-           } else{
-               var categoriesArray = _.map(data.specialization, function(catId){
-                  return {categoryId : mongoose.Types.ObjectId(catId), styles : [1,2]};
-               });
-               var photographerApplication = new database.PhotographerApplication({
-                   name : data.name,
-                   email : data.email,
-                   zipCode : data.zipCode,
-                   phoneNumber : data.phoneNumber,
-                   categories : categoriesArray,
-                   cameraModel : data.camera,
-                   ableToRetouch : data.retouch === "true" ? true : false,
-                   minHourlyRate : data.rate,
-                   webSite : data.website,
-                   phoneModel : data.phoneModel,
-                   reviewPhase : 2,
-                   isApproved : false
-               });
+            if(err){
+                next(err);
+            } else{
+                var categoriesArray = _.map(data.specialization, function(catId){
+                    return {categoryId : mongoose.Types.ObjectId(catId), styles : [1,2]};
+                });
+                var photographerApplication = new database.PhotographerApplication({
+                    name : data.name,
+                    email : data.email,
+                    zipCode : data.zipCode,
+                    phoneNumber : data.phoneNumber,
+                    categories : categoriesArray,
+                    cameraModel : data.camera,
+                    ableToRetouch : data.retouch === "true" ? true : false,
+                    minHourlyRate : data.rate,
+                    webSite : data.website,
+                    phoneModel : data.phoneModel,
+                    reviewPhase : 2,
+                    isApproved : false
+                });
 
-               photographerApplication.save(function(err,applicationSaveResult){
-                  if(err){
-                      next(err);
-                  } else{
-                      if (userResult.photographerApplications){
-                          userResult.photographerApplications.push(mongoose.Types.ObjectId(applicationSaveResult._id));
-                      }else{
-                          userResult.photographerApplications = [mongoose.Types.ObjectId(applicationSaveResult._id)]
-                      }
+                photographerApplication.save(function(err,applicationSaveResult){
+                    if(err){
+                        next(err);
+                    } else{
+                        if (userResult.photographerApplications){
+                            userResult.photographerApplications.push(mongoose.Types.ObjectId(applicationSaveResult._id));
+                        }else{
+                            userResult.photographerApplications = [mongoose.Types.ObjectId(applicationSaveResult._id)]
+                        }
 
-                      userResult.save(function(err,userSaveResult){
-                         if(err){
-                             applicationSaveResult.remove();
-                             next(err);
-                         } else{
-                             next(null);
-                         }
-                      });
-                  }
-               });
-           }
+                        userResult.save(function(err,userSaveResult){
+                            if(err){
+                                applicationSaveResult.remove();
+                                next(err);
+                            } else{
+                                next(null);
+                            }
+                        });
+                    }
+                });
+            }
         });
     }
 
@@ -66,11 +69,11 @@
     }
     photographerOperationsManager.getPhotographerUserId = function(photographerId, next){
         database.User.findOne({photographer : photographerId}).exec(function(err,user){
-           if(err){
-               next(err);
-           } else{
-               next(null,user._id);
-           }
+            if(err){
+                next(err);
+            } else{
+                next(null,user._id);
+            }
         });
     }
     photographerOperationsManager.checkIfPhotographerApplicationUpdated = function(userId, version, next){
@@ -103,11 +106,11 @@
                 applicationResult.reviewPhase = 4;
                 applicationResult.isApproved = true;
                 applicationResult.save(function(err,applicationResultSaveResult){
-                   if(err || !applicationResultSaveResult){
-                       next(err);
-                   }else{
-                       next(null, operationResult.createSuccesResult(applicationResultSaveResult.toObject()));
-                   }
+                    if(err || !applicationResultSaveResult){
+                        next(err);
+                    }else{
+                        next(null, operationResult.createSuccesResult(applicationResultSaveResult.toObject()));
+                    }
                 });
             }
         });
@@ -148,15 +151,15 @@
             },function(user,photographer,wf){
                 user.photographer = photographer._id;
                 user.save(function(err,userSaveResult){
-                   if(err){
-                       wf(err);
-                   } else{
-                       if(!userSaveResult){
-                           wf(operationResult.createErrorResult(""));
-                       }else{
-                           wf(null, photographer);
-                       }
-                   }
+                    if(err){
+                        wf(err);
+                    } else{
+                        if(!userSaveResult){
+                            wf(operationResult.createErrorResult(""));
+                        }else{
+                            wf(null, photographer);
+                        }
+                    }
                 });
             }
         ],function(err, photographer){
@@ -201,15 +204,15 @@
 
     photographerOperationsManager.checkIfPhotographerUpdated = function(photographerId, version, next){
         database.Photographer.findOne({_id : mongoose.Types.ObjectId(photographerId)}).exec(function(err,photographerResult){
-           if(err){
-               next(err);
-           } else{
-               if(photographerResult.__v != version){
-                   next(null, operationResult.createSuccesResult(photographerResult.toObject()));
-               }else{
-                   next(null, operationResult.createSuccesResult());
-               }
-           }
+            if(err){
+                next(err);
+            } else{
+                if(photographerResult.__v != version){
+                    next(null, operationResult.createSuccesResult(photographerResult.toObject()));
+                }else{
+                    next(null, operationResult.createSuccesResult());
+                }
+            }
         });
     }
 
@@ -227,11 +230,11 @@
                         device.location = location;
                         device.lastLocationUpdateDate = data.eventDate;
                         device.save(function(err,deviceSaveResult){
-                           if(err){
-                               wf(err);
-                           } else{
-                               wf(null,device);
-                           }
+                            if(err){
+                                wf(err);
+                            } else{
+                                wf(null,device);
+                            }
                         });
                     }
                 });
@@ -320,7 +323,7 @@
                         return;
                     }
                 }
-        });
+            });
     }
 
     photographerOperationsManager.updatePhotographersActiveInstantRequest = function(photographerId, locationData, next){
@@ -360,30 +363,30 @@
 
     photographerOperationsManager.cancelInstantRequest = function(user, instantRequestId, next){
         database.InstantRequest.findOne({_id : instantRequestId}).exec(function(err,result){
-           if(err){
-               next(err);
-           } else{
-               var takenPr = _.find(result.photographerRequests, function(pr){ return pr.isTaken });
-               if (takenPr){
-                   if (takenPr.photographerId.toString() === user.photographer.toString()){
-                       result.cancelled = true;
-                       result.cancelledByPhotographer = true;
-                       result.finished = true;
-                       result.finishedDate = new Date();
-                       result.save(function(err,saveResult){
-                          if(err){
-                              next(err);
-                          } else{
-                              next(null, result.userId, operationResult.createSuccesResult());
-                          }
-                       });
-                   }else{
-                       next(operationResult.createErrorResult("Something went wrong"));
-                   }
-               }else{
-                   next(operationResult.createErrorResult("Something went wrong"));
-               }
-           }
+            if(err){
+                next(err);
+            } else{
+                var takenPr = _.find(result.photographerRequests, function(pr){ return pr.isTaken });
+                if (takenPr){
+                    if (takenPr.photographerId.toString() === user.photographer.toString()){
+                        result.cancelled = true;
+                        result.cancelledByPhotographer = true;
+                        result.finished = true;
+                        result.finishedDate = new Date();
+                        result.save(function(err,saveResult){
+                            if(err){
+                                next(err);
+                            } else{
+                                next(null, result.userId, operationResult.createSuccesResult());
+                            }
+                        });
+                    }else{
+                        next(operationResult.createErrorResult("Something went wrong"));
+                    }
+                }else{
+                    next(operationResult.createErrorResult("Something went wrong"));
+                }
+            }
         });
     }
 
@@ -391,87 +394,87 @@
         database.Photographer.findOne({
             _id : photographerId
         }).exec(function(err,photographerResult){
-           if(err){
-               next(err);
-           } else{
-               database.InstantRequest.update({
-                   _id : instantRequestId,
-                   "photographerRequests.photographerId" : photographerId
-               },{
-                   $set : {
-                       found : accepted,
-                       "photographerRequests.$.isAnswered" : true,
-                       "photographerRequests.$.isTaken" : accepted,
-                       "photographerRequests.$.currentLocation" : photographerResult.location
-                   }
-               }).exec(function(err,updateResult){
-                   if(err){
-                       next(err);
-                   }else{
-                       if(accepted && updateResult.nModified > 0){
-                           database.InstantRequest.findOneAndUpdate(
-                               {
-                                   _id : instantRequestId },
-                               {
-                                   $pull : {
-                                    photographerRequests: {askedDate : null}
-                                   }
-                               },{
-                                   new : true
-                               }
-                           )
-                               .populate("userId")
-                               .populate("categoryId")
-                               .exec(function(err,res){
-                               if(err){
-                                   next(null, operationResult.createSuccesResult());
-                               }else{
-                                   database.User.populate(res.userId, {"path":"socialUser"}, function(err,userOutput){
-                                       if(userOutput){
-                                           var obj = res.toObject();
-                                           obj.userId = userOutput.toObject();
-                                           next(null, operationResult.createSuccesResult(obj));
-                                       }else{
-                                           var obj = res.toObject();
-                                           next(null, operationResult.createSuccesResult(obj));
-                                       }
-                                   });
-                               }
-                           })
-                       }else{
-                           next(null, true);
-                       }
+            if(err){
+                next(err);
+            } else{
+                database.InstantRequest.update({
+                    _id : instantRequestId,
+                    "photographerRequests.photographerId" : photographerId
+                },{
+                    $set : {
+                        found : accepted,
+                        "photographerRequests.$.isAnswered" : true,
+                        "photographerRequests.$.isTaken" : accepted,
+                        "photographerRequests.$.currentLocation" : photographerResult.location
+                    }
+                }).exec(function(err,updateResult){
+                    if(err){
+                        next(err);
+                    }else{
+                        if(accepted && updateResult.nModified > 0){
+                            database.InstantRequest.findOneAndUpdate(
+                                {
+                                    _id : instantRequestId },
+                                {
+                                    $pull : {
+                                        photographerRequests: {askedDate : null}
+                                    }
+                                },{
+                                    new : true
+                                }
+                            )
+                                .populate("userId")
+                                .populate("categoryId")
+                                .exec(function(err,res){
+                                    if(err){
+                                        next(null, operationResult.createSuccesResult());
+                                    }else{
+                                        database.User.populate(res.userId, {"path":"socialUser"}, function(err,userOutput){
+                                            if(userOutput){
+                                                var obj = res.toObject();
+                                                obj.userId = userOutput.toObject();
+                                                next(null, operationResult.createSuccesResult(obj));
+                                            }else{
+                                                var obj = res.toObject();
+                                                next(null, operationResult.createSuccesResult(obj));
+                                            }
+                                        });
+                                    }
+                                })
+                        }else{
+                            next(null, true);
+                        }
 
-                   }
-               })
-           }
+                    }
+                })
+            }
         });
     }
 
     photographerOperationsManager.confirmArrivalOfPhotographer = function(instantRequestId, next){
-     database.InstantRequest.findOneAndUpdate(
-         {
-            _id : instantRequestId
-         }, {
-             $set : {
-                 arrived : true,
-                 arrivedDate : new Date()
-             }
-         }, {
-             new: true
-         }).exec(function(err,result){
-             if(err){
-                 next(err);
-             }else{
-                 var obj = {
-                     arrived : result.arrived,
-                     arrivedDate : result.arrivedDate,
-                     userId : result.userId
-                 };
+        database.InstantRequest.findOneAndUpdate(
+            {
+                _id : instantRequestId
+            }, {
+                $set : {
+                    arrived : true,
+                    arrivedDate : new Date()
+                }
+            }, {
+                new: true
+            }).exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    var obj = {
+                        arrived : result.arrived,
+                        arrivedDate : result.arrivedDate,
+                        userId : result.userId
+                    };
 
-                 next(null, operationResult.createSuccesResult(obj));
-             }
-         })
+                    next(null, operationResult.createSuccesResult(obj));
+                }
+            })
     }
 
     photographerOperationsManager.startPhotoShooting = function(instantRequestId, next){
@@ -524,6 +527,154 @@
                     next(null, operationResult.createSuccesResult(obj));
                 }
             })
+    }
+
+    photographerOperationsManager.uploadInitialPhotosOfInstantRequest = function(instantRequestId, photos, next){
+        var initialPhotoPaths = _.map(photos, function(photo){ return photo.path});
+        async.each(initialPhotoPaths, function(path, cb){
+                var watermarkPhotos = new database.WatermarkPhotos({
+                    instantRequestId : instantRequestId,
+                    path : path
+                });
+                watermarkPhotos.save(function(err,result){
+                    if(err){
+                        cb(err);
+                    } else{
+                        cb();
+                    }
+                });
+            },
+            function(err){
+                if(err){
+                    next(err);
+                }else{
+                    database.InstantRequest.update(
+                        {_id : instantRequestId} ,
+                        {$set : {nonEditedPhotosAdded : true, nonEditedPhotosAddedDate : new Date()}})
+                        .exec(function(err,updateResult){
+                            if(err){
+                                next(err);
+                            }else{
+                                if (updateResult.nModified > 0){
+                                    next(null,operationResult.createSuccesResult());
+                                }
+                            }
+                        });
+
+                }
+            });
+    }
+
+
+    photographerOperationsManager.getPhotographerInstantRequestsHistory = function(photographerId, skipCount, limitCount, next){
+        database.InstantRequest.aggregate(
+            {
+                $unwind : "$photographerRequests"
+            },
+            {
+                $match : {
+                    "photographerRequests.photographerId" : photographerId,
+                    "photographerRequests.isTaken" : true
+                }
+            },
+            {
+                $sort:
+                {
+                    "requestDate": -1
+                }
+            },
+            {
+                $skip : skipCount
+            },
+            {
+                $limit : limitCount
+            },
+            {
+                $project :
+                {
+                    _id : 1,
+                    finished : 1,
+                    cancelled : 1,
+                    requestDate : 1,
+                    location : 1,
+                    arrivedDate : 1,
+                    shootingStartedDate : 1,
+                    finishedDate : 1,
+                    userId : 1,
+                    categoryId : 1,
+                    photographStyle : 1,
+                    nonEditedPhotosAdded : 1,
+                    nonEditedPhotosAddedDate :1,
+                    userChoosed : 1,
+                    userChoosedDate: 1,
+                    editedPhotosAdded : 1,
+                    editedPhotosAddedDate : 1
+                }
+            }
+        ).exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    var instantRequests = [];
+                    async.each(result, function(instantRequest, eachCb){
+                        async.series([
+                            function(cb){
+                                database.User.findOne({_id : instantRequest.userId}).populate("socialUser").exec(function(err, userResult){
+                                    if(err){
+                                        cb(err);
+                                    }else{
+                                        instantRequest.userName = userResult.name;
+                                        instantRequest.userEmail = userResult.email;
+                                        instantRequest.userPhoneNumber = userResult.phoneNumber;
+                                        if(userResult.socialUser != null && userResult.socialUser != undefined){
+                                            instantRequest.userPictureUri = userResult.socialUser.pictureUri;
+                                        }
+                                        cb();
+                                    }
+                                })
+                            },
+                            function(cb){
+                                if(instantRequest.nonEditedPhotosAdded === true && instantRequest.userChoosed === false){
+                                    database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, watermarkPhotos){
+                                       if(err){
+                                           cb(err);
+                                       } else{
+                                           instantRequest.watermarkPhotos = watermarkPhotos;
+                                           cb();
+                                       }
+                                    });
+                                }else{
+                                    cb();
+                                }
+                            },
+                            function(cb){
+                                database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){
+                                    if(err){
+                                        cb(err);
+                                    }else{
+                                        instantRequest.categoryName = categoryResult.name + (instantRequest.photographStyle == 1 ? " - Indoor" : " - Outdoor");
+                                        cb();
+                                    }
+                                });
+                            }
+                        ], function(err){
+                            if(err){
+                                eachCb(err);
+                            }else{
+                                instantRequests.push(instantRequest);
+                                eachCb();
+                            }
+                        });
+                    }, function(err){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(instantRequests));
+                        }
+                    });
+
+                }
+            });
     }
 
 })(module.exports);
