@@ -133,8 +133,19 @@
                 }
             });
         });
-
-        return router
+        router.get("/getUsersInstantRequestsHistory", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var skipCount = Number(req.query.skip);
+            var limitCount = Number(req.query.limit);
+            var userId = req.user._id;
+            customerOperations.getUsersInstantRequestsHistory(userId,skipCount,limitCount, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+        return router;
     }
 
     customerController.nameThisMotherfucker = function(instantRequest){
