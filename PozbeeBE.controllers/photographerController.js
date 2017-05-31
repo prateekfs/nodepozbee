@@ -6,7 +6,7 @@
     var _ = require("underscore");
     var multer = require("multer");
     var upload = multer({dest : "./uploads/initialPhotos"});
-    var editedUpload = multer({dest : ".uploads/editedPhotos"});
+    var editedUpload = multer({dest : "./uploads/editedPhotos"});
     var mongoose = require("mongoose");
     var iosNotification;
 
