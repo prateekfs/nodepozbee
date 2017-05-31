@@ -145,8 +145,24 @@
                 }
             })
         });
+        router.post("/setSelectedWatermarkPhotos", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var selectedPhotoIds = _.map(req.body["selectedWatermarkedPhotos[]"], function(id){
+               return mongoose.Types.ObjectId(id);
+            });
+            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
+            customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result){
+               if(err){
+                   res.status(444).send(err);
+               } else{
+                   res.status(200).send(result);
+               }
+            });
+
+        })
+
         return router;
     }
+
 
     customerController.nameThisMotherfucker = function(instantRequest){
         var timer;

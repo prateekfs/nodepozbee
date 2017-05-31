@@ -19,4 +19,5 @@
     database.Photographer = require("./collections/photographer").Model;
     database.InstantRequest = require("./collections/instantRequest").Model;
     database.WatermarkPhotos = require("./collections/watermarkPhotos").Model;
+    database.EditedPhotos = require("./collections/editedPhotos").Model;
 })(module.exports);

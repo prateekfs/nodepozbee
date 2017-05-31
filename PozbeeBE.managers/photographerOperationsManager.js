@@ -531,6 +531,7 @@
 
     photographerOperationsManager.uploadInitialPhotosOfInstantRequest = function(instantRequestId, photos, next){
         var initialPhotoPaths = _.map(photos, function(photo){ return photo.path});
+        var watermarkPhotosList = [];
         async.each(initialPhotoPaths, function(path, cb){
                 var watermarkPhotos = new database.WatermarkPhotos({
                     instantRequestId : instantRequestId,
@@ -540,6 +541,10 @@
                     if(err){
                         cb(err);
                     } else{
+                        watermarkPhotosList.push({
+                            _id : result._id.toString(),
+                            path : path
+                        })
                         cb();
                     }
                 });
@@ -556,7 +561,7 @@
                                 next(err);
                             }else{
                                 if (updateResult.nModified > 0){
-                                    next(null,operationResult.createSuccesResult());
+                                    next(null,operationResult.createSuccesResult(watermarkPhotosList));
                                 }
                             }
                         });
@@ -565,6 +570,46 @@
             });
     }
 
+    photographerOperationsManager.uploadEditedPhotosOfInstantRequest = function(instantRequestId, photos, next){
+        var initialPhotoPaths = _.map(photos, function(photo){ return photo.path});
+        var editedPhotoList = [];
+        async.each(initialPhotoPaths, function(path, cb){
+                var editedPhoto = new database.EditedPhotos({
+                    instantRequestId : instantRequestId,
+                    path : path
+                });
+                editedPhoto .save(function(err,result){
+                    if(err){
+                        cb(err);
+                    } else{
+                        editedPhotoList.push({
+                            _id : result._id.toString(),
+                            path : path
+                        })
+                        cb();
+                    }
+                });
+            },
+            function(err){
+                if(err){
+                    next(err);
+                }else{
+                    database.InstantRequest.update(
+                        {_id : instantRequestId} ,
+                        {$set : {editedPhotosAdded : true, editedPhotosAddedDate : new Date()}})
+                        .exec(function(err,updateResult){
+                            if(err){
+                                next(err);
+                            }else{
+                                if (updateResult.nModified > 0){
+                                    next(null,operationResult.createSuccesResult(editedPhotoList));
+                                }
+                            }
+                        });
+
+                }
+            });
+    }
 
     photographerOperationsManager.getPhotographerInstantRequestsHistory = function(photographerId, skipCount, limitCount, next){
         database.InstantRequest.aggregate(
@@ -634,18 +679,24 @@
                                 })
                             },
                             function(cb){
-                                if(instantRequest.nonEditedPhotosAdded === true && instantRequest.userChoosed === false){
-                                    database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, watermarkPhotos){
-                                       if(err){
-                                           cb(err);
-                                       } else{
-                                           instantRequest.watermarkPhotos = watermarkPhotos;
-                                           cb();
-                                       }
-                                    });
-                                }else{
-                                    cb();
-                                }
+                                database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                    if(err){
+                                        cb(err);
+                                    } else{
+                                        instantRequest.watermarkPhotos = watermarkPhotos;
+                                        cb();
+                                    }
+                                });
+                            },
+                            function(cb){
+                                database.EditedPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                    if(err){
+                                        cb(err);
+                                    } else{
+                                        instantRequest.editedPhotos = editedPhotos;
+                                        cb();
+                                    }
+                                });
                             },
                             function(cb){
                                 database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){

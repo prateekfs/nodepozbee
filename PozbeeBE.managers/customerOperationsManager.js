@@ -430,6 +430,51 @@
         });
     }
 
+    customerOperations.setSelectedWatermarkPhotos = function(instantRequestId, watermarkPhotoIds, next){
+        database.WatermarkPhotos.update({
+            _id : {
+                $in : watermarkPhotoIds
+            }
+        },{
+            $set : {
+                isChoosed : true
+            }
+        },{"multi": true}).exec(function(err,result){
+            if(err){
+                next(err);
+            }else{
+                if (result.nModified > 0){
+                    database.InstantRequest.findOneAndUpdate({
+                        _id : instantRequestId
+                    },{
+                        $set : {
+                            userChoosed : true,
+                            userChoosedDate : new Date()
+                        }
+                    },{
+                        new : true
+                    }).exec(function(err,instantRequest){
+                       if(err){
+                           database.WatermarkPhotos.update({
+                               _id : {
+                                   $in : watermarkPhotoIds
+                               }
+                           },{
+                               $set : {
+                                   isChoosed : false
+                               }
+                           },{"multi" : true}).exec();
+                           next(err);
+                       }else{
+                           next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}));
+                       }
+                    });
+
+                }
+            }
+        })
+    }
+
     customerOperations.getUsersInstantRequestsHistory = function(userId, skipCount, limitCount, next){
         database.InstantRequest.aggregate(
             {
@@ -499,18 +544,24 @@
                                 })
                             },
                             function(cb){
-                                if(instantRequest.nonEditedPhotosAdded === true && instantRequest.userChoosed === false){
-                                    database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, watermarkPhotos){
-                                        if(err){
-                                            cb(err);
-                                        } else{
-                                            instantRequest.watermarkPhotos = watermarkPhotos;
-                                            cb();
-                                        }
-                                    });
-                                }else{
-                                    cb();
-                                }
+                                database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                    if(err){
+                                        cb(err);
+                                    } else{
+                                        instantRequest.watermarkPhotos = watermarkPhotos;
+                                        cb();
+                                    }
+                                });
+                            },
+                            function(cb){
+                                database.EditedPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                    if(err){
+                                        cb(err);
+                                    } else{
+                                        instantRequest.editedPhotos = editedPhotos;
+                                        cb();
+                                    }
+                                });
                             },
                             function(cb){
                                 database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){
@@ -619,7 +670,6 @@
                 next(null,photographerStatistics);
             });
     }
-
 
 
 })(module.exports)
