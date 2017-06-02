@@ -150,10 +150,21 @@
                return mongoose.Types.ObjectId(id);
             });
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
-            customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result){
+            customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result, instantRequest){
                if(err){
                    res.status(444).send(err);
                } else{
+                   var takenPhotographer = _.find(instantRequest.photographerRequests, function(req) { return req.isTaken });
+                   photographerOperations.getPhotographerUserId(takenPhotographer.photographerId, function(err,userId){
+                       if(!err) {
+                           var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
+                           customerController.iosNotification.sendNotification(userId, 'Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '. Select photos you like to be retouched.', {
+                               type: global.NotificationEnum.PhotographsSelected,
+                               id: instantRequest._id.toString()
+                           })
+                       }
+                   });
+
                    res.status(200).send(result);
                }
             });

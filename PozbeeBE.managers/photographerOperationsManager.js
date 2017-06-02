@@ -602,16 +602,25 @@
                 if(err){
                     next(err);
                 }else{
-                    database.InstantRequest.update(
-                        {_id : instantRequestId} ,
-                        {$set : {editedPhotosAdded : true, editedPhotosAddedDate : new Date()}})
-                        .exec(function(err,updateResult){
+                    database.InstantRequest.findOneAndUpdate(
+                        {
+                            _id : instantRequestId
+                        } ,
+                        {
+                            $set :
+                            {
+                                editedPhotosAdded : true,
+                                editedPhotosAddedDate : new Date()
+                            }
+                        },
+                        {
+                            new : true
+                        })
+                        .exec(function(err,instantRequest){
                             if(err){
                                 next(err);
                             }else{
-                                if (updateResult.nModified > 0){
-                                    next(null,operationResult.createSuccesResult(editedPhotoList));
-                                }
+                                next(null,operationResult.createSuccesResult(editedPhotoList), instantRequest);
                             }
                         });
 

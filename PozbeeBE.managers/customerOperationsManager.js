@@ -466,7 +466,7 @@
                            },{"multi" : true}).exec();
                            next(err);
                        }else{
-                           next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}));
+                           next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}), instantRequest);
                        }
                     });
 

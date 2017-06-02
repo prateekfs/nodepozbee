@@ -204,7 +204,7 @@
                     res.status(444).send(err);
                 }else{
                     var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which is dated ' + date)
+                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '. Select photos you like to be retouched.',{type : global.NotificationEnum.NonEditedPhotosAdded, id : instantRequest._id.toString()})
                     res.status(200).send(result);
                 }
             });
@@ -214,10 +214,12 @@
         router.post("/uploadEditedPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
             var photos = req.files.editedPhotos;
-            photographerOperationsManager.uploadEditedPhotosOfInstantRequest(instantRequestId,photos, function(err,result){
+            photographerOperationsManager.uploadEditedPhotosOfInstantRequest(instantRequestId,photos, function(err, result, instantRequest){
                 if(err){
                     res.status(444).send(err);
                 }else{
+                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
+                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : instantRequest._id.toString()})
                     res.status(200).send(result);
                 }
             });
