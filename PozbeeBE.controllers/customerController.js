@@ -146,19 +146,19 @@
             })
         });
         router.post("/setSelectedWatermarkPhotos", passport.authenticate("bearer",{session : false}), function(req,res,next){
-            var selectedPhotoIds = _.map(req.body["selectedWatermarkedPhotos[]"], function(id){
+            var selectedPhotoIds = Array.isArray(req.body["selectedWatermarkedPhotos[]"]) ? _.map(req.body["selectedWatermarkedPhotos[]"], function(id){
                return mongoose.Types.ObjectId(id);
-            });
+            }) : [req.body["selectedWatermarkedPhotos[]"]];
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
             customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result, instantRequest){
                if(err){
                    res.status(444).send(err);
                } else{
-                   var takenPhotographer = _.find(instantRequest.photographerRequests, function(req) { return req.isTaken });
+                   var takenPhotographer = _.find(instantRequest.photographerRequests, function(req) { return req.isTaken === true; });
                    photographerOperations.getPhotographerUserId(takenPhotographer.photographerId, function(err,userId){
                        if(!err) {
                            var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                           customerController.iosNotification.sendNotification(userId, 'Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '. Select photos you like to be retouched.', {
+                           customerController.iosNotification.sendNotification(userId, 'Your customer from the Instant Photo Shooting from ' + date + ' has selected photos. Check it now.', {
                                type: global.NotificationEnum.PhotographsSelected,
                                id: instantRequest._id.toString()
                            })
