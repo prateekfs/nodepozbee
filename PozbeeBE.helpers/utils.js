@@ -38,7 +38,7 @@ global.NotificationEnum = Object.freeze(
 global.getLocalTimeByLocation = function(location ,date){
     var zone = tzlookup(location[1],location[0]);
     var d = moment(date).utc();
-    var formattedDate = d.tz(zone).format("MMM d, h:mm a");
+    var formattedDate = d.format("MMM d, h:mm a");
 
     return formattedDate;
 }

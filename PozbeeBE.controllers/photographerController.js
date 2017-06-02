@@ -203,7 +203,7 @@
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate.toString());
+                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
                     photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which is dated ' + date)
                     res.status(200).send(result);
                 }
