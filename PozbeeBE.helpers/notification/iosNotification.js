@@ -13,7 +13,7 @@
         production: false // Set to true if sending a notification to a production iOS app
     });
 
-    iosNotification.sendNotification = function(userId, notificationText){
+    iosNotification.sendNotification = function(userId, notificationText, payload){
         database.Device.find({activeUserId : userId, pushNotificationToken : {$ne : null}}).exec(function(err,result){
            if(err){
 
@@ -24,6 +24,7 @@
                    notification.expiry = Math.floor(Date.now() / 1000) + 3600;
                    notification.sound = 'ping.aiff'
                    notification.alert = notificationText;
+                   notification.payload = payload;
                    apnProvider.send(notification,device.pushNotificationToken).then(function(result){
 
                    });

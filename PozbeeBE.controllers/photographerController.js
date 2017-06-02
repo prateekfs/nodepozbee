@@ -137,7 +137,7 @@
         });
         router.get("/informCustomer",passport.authenticate("bearer", {session : false}), function(req,res,next){
             var userId = mongoose.Types.ObjectId(req.query.userId);
-            photographerController.iosNotification.sendNotification(userId, "Photographer is coming");
+            photographerController.iosNotification.sendNotification(userId, "Photographer is coming", {type : global.NotificationEnum.PhotographerIsComing});
         });
         router.get("/confirmArrivalOfPhotographer", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
@@ -147,7 +147,7 @@
                 }else{
                     var obj = result.resultObject;
                     photographerController.io.of("customer").to(obj.userId.toString()).emit("photographerHasArrived", obj);
-                    photographerController.iosNotification.sendNotification(obj.userId,"Photographer has arrived!");
+                    photographerController.iosNotification.sendNotification(obj.userId,"Photographer has arrived!",{type : global.NotificationEnum.PhotographerArrived});
 
                     res.status(200).send(result);
                 }
@@ -161,7 +161,7 @@
                 }else{
                     var obj = result.resultObject;
                     photographerController.io.of("customer").to(obj.userId.toString()).emit("photoShootingHasBeenStarted", obj);
-                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been started!");
+                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been started!", {type : global.NotificationEnum.PhotographingSessionStarted});
 
                     res.status(200).send(result);
                 }
@@ -176,7 +176,7 @@
                 }else{
                     var obj = result.resultObject;
                     photographerController.io.of("customer").to(obj.userId.toString()).emit("photoShootingHasBeenFinished", obj);
-                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been finished!");
+                    photographerController.iosNotification.sendNotification(obj.userId,"Photo shooting has been finished!", {type : global.NotificationEnum.PhotographingSessionFinished});
 
                     res.status(200).send(result);
                 }
@@ -199,10 +199,12 @@
         router.post("/uploadInitialPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
             var photos = req.files.initialPhotos;
-            photographerOperationsManager.uploadInitialPhotosOfInstantRequest(instantRequestId,photos, function(err,result){
+            photographerOperationsManager.uploadInitialPhotosOfInstantRequest(instantRequestId,photos, function(err, result, instantRequest){
                 if(err){
                     res.status(444).send(err);
                 }else{
+                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate.toString());
+                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which is dated ' + date)
                     res.status(200).send(result);
                 }
             });

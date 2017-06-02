@@ -1,5 +1,6 @@
 var crypto = require("crypto");
-
+var moment = require('moment-timezone');
+var tzlookup = require("tz-lookup");
 GLOBAL.randomValueBase64 = function randomValueBase64 (len) {
     return crypto.randomBytes(Math.ceil(len * 3 / 4))
         .toString('base64')   // convert to base64 format
@@ -21,3 +22,23 @@ GLOBAL.Dictionary = function Dictionary() {
 global.METERS_PER_MILE = 1609.344;
 
 global.instantRequestTimers = [];
+global.NotificationEnum = Object.freeze(
+    {
+        "NewInstantRequest" : 1,
+        "RequestCancelled" : 2,
+        "PhotographerIsComing" : 3,
+        "PhotographerArrived": 4,
+        "PhotographingSessionStarted" :5,
+        "PhotographingSessionFinished" :6,
+        "NonEditedPhotosAdded" : 7,
+        "PhotographsSelected" : 8,
+        "EditedPhotosAdded" : 9
+    })
+
+global.getLocalTimeByLocation = function(location ,date){
+    var zone = tzlookup(location[1],location[0]);
+    var d = moment(date).utc();
+    var formattedDate = d.tz(zone).format("MMM d, h:mm a");
+
+    return formattedDate;
+}
