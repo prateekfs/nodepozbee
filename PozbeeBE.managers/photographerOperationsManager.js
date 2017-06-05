@@ -631,16 +631,28 @@
             });
     }
 
-    photographerOperationsManager.getPhotographerInstantRequestsHistory = function(photographerId, skipCount, limitCount, next){
+    photographerOperationsManager.getPhotographerInstantRequestsHistory = function(photographerId, skipCount, limitCount, include, exclude, next){
+        var matchQuery;
+        if (exclude) {
+            matchQuery = {
+                "photographerRequests.photographerId": photographerId,
+                "photographerRequests.isTaken": true,
+                "_id" : {
+                    $nin : [exclude]
+                }
+            }
+        }else{
+            matchQuery = {
+                "photographerRequests.photographerId": photographerId,
+                "photographerRequests.isTaken": true,
+            }
+        }
         database.InstantRequest.aggregate(
             {
                 $unwind : "$photographerRequests"
             },
             {
-                $match : {
-                    "photographerRequests.photographerId" : photographerId,
-                    "photographerRequests.isTaken" : true
-                }
+                $match : matchQuery
             },
             {
                 $sort:
@@ -682,67 +694,128 @@
                     next(err);
                 }else{
                     var instantRequests = [];
-                    async.each(result, function(instantRequest, eachCb){
-                        async.series([
-                            function(cb){
-                                database.User.findOne({_id : instantRequest.userId}).populate("socialUser").exec(function(err, userResult){
-                                    if(err){
-                                        cb(err);
+                    async.series([
+                            function(initialCb){
+                                if (include){
+                                    var includingInstantReq = _.find(result, function(ir){ return ir._id.toString == include.toString() });
+                                    if(!includingInstantReq){
+                                        database.InstantRequest.aggregate(
+                                            {
+                                                $unwind : "$photographerRequests"
+                                            },
+                                            {
+                                                $match : {
+                                                    "_id" : include
+                                                }
+                                            },
+                                            {
+                                                $project :
+                                                {
+                                                    _id : 1,
+                                                    finished : 1,
+                                                    cancelled : 1,
+                                                    requestDate : 1,
+                                                    location : 1,
+                                                    arrivedDate : 1,
+                                                    shootingStartedDate : 1,
+                                                    finishedDate : 1,
+                                                    userId : 1,
+                                                    categoryId : 1,
+                                                    photographStyle : 1,
+                                                    nonEditedPhotosAdded : 1,
+                                                    nonEditedPhotosAddedDate :1,
+                                                    userChoosed : 1,
+                                                    userChoosedDate: 1,
+                                                    editedPhotosAdded : 1,
+                                                    editedPhotosAddedDate : 1
+                                                }
+                                            }
+                                        ).exec(function(err,includeResult){
+                                                if(err){
+                                                    initialCb(err);
+                                                }else{
+                                                    var includingInstantReq = includeResult[0];
+                                                    result.splice(0,0, includingInstantReq);
+                                                    initialCb();
+                                                }
+                                            });
                                     }else{
-                                        instantRequest.userName = userResult.name;
-                                        instantRequest.userEmail = userResult.email;
-                                        instantRequest.userPhoneNumber = userResult.phoneNumber;
-                                        if(userResult.socialUser != null && userResult.socialUser != undefined){
-                                            instantRequest.userPictureUri = userResult.socialUser.pictureUri;
+                                        initialCb();
+                                    }
+                                }else{
+                                    initialCb();
+                                }
+                            }, function(initialCb){
+                                async.each(result, function(instantRequest, eachCb){
+                                    async.series([
+                                        function(cb){
+                                            database.User.findOne({_id : instantRequest.userId}).populate("socialUser").exec(function(err, userResult){
+                                                if(err){
+                                                    cb(err);
+                                                }else{
+                                                    instantRequest.userName = userResult.name;
+                                                    instantRequest.userEmail = userResult.email;
+                                                    instantRequest.userPhoneNumber = userResult.phoneNumber;
+                                                    if(userResult.socialUser != null && userResult.socialUser != undefined){
+                                                        instantRequest.userPictureUri = userResult.socialUser.pictureUri;
+                                                    }
+                                                    cb();
+                                                }
+                                            })
+                                        },
+                                        function(cb){
+                                            database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                                if(err){
+                                                    cb(err);
+                                                } else{
+                                                    instantRequest.watermarkPhotos = watermarkPhotos;
+                                                    cb();
+                                                }
+                                            });
+                                        },
+                                        function(cb){
+                                            database.EditedPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                                if(err){
+                                                    cb(err);
+                                                } else{
+                                                    instantRequest.editedPhotos = editedPhotos;
+                                                    cb();
+                                                }
+                                            });
+                                        },
+                                        function(cb){
+                                            database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){
+                                                if(err){
+                                                    cb(err);
+                                                }else{
+                                                    instantRequest.categoryName = categoryResult.name + (instantRequest.photographStyle == 1 ? " - Indoor" : " - Outdoor");
+                                                    cb();
+                                                }
+                                            });
                                         }
-                                        cb();
-                                    }
-                                })
-                            },
-                            function(cb){
-                                database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                    ], function(err){
+                                        if(err){
+                                            eachCb(err);
+                                        }else{
+                                            instantRequests.push(instantRequest);
+                                            eachCb();
+                                        }
+                                    });
+                                }, function(err){
                                     if(err){
-                                        cb(err);
-                                    } else{
-                                        instantRequest.watermarkPhotos = watermarkPhotos;
-                                        cb();
-                                    }
-                                });
-                            },
-                            function(cb){
-                                database.EditedPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, editedPhotos){
-                                    if(err){
-                                        cb(err);
-                                    } else{
-                                        instantRequest.editedPhotos = editedPhotos;
-                                        cb();
-                                    }
-                                });
-                            },
-                            function(cb){
-                                database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){
-                                    if(err){
-                                        cb(err);
+                                        initialCb(err);
                                     }else{
-                                        instantRequest.categoryName = categoryResult.name + (instantRequest.photographStyle == 1 ? " - Indoor" : " - Outdoor");
-                                        cb();
+                                        initialCb();
                                     }
                                 });
                             }
-                        ], function(err){
+                        ],
+                        function(err){
                             if(err){
-                                eachCb(err);
+                                next(err);
                             }else{
-                                instantRequests.push(instantRequest);
-                                eachCb();
+                                next(null, operationResult.createSuccesResult(instantRequests));
                             }
-                        });
-                    }, function(err){
-                        if(err){
-                            next(err);
-                        }else{
-                            next(null, operationResult.createSuccesResult(instantRequests));
-                        }
                     });
 
                 }

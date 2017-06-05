@@ -187,7 +187,9 @@
             var photographerId = mongoose.Types.ObjectId(req.query.photographerId);
             var skipCount = Number(req.query.skip);
             var limitCount = Number(req.query.limit);
-            photographerOperationsManager.getPhotographerInstantRequestsHistory(photographerId, skipCount, limitCount, function(err,result){
+            var include = req.query.include == "" ? null : mongoose.Types.ObjectId(req.query.include);
+            var exclude = req.query.exclude == "" ? null : mongoose.Types.ObjectId(req.query.exclude);
+            photographerOperationsManager.getPhotographerInstantRequestsHistory(photographerId, skipCount, limitCount, include, exclude, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 }else{
