@@ -449,7 +449,8 @@
                     },{
                         $set : {
                             userChoosed : true,
-                            userChoosedDate : new Date()
+                            userChoosedDate : new Date(),
+                            updated : new Date()
                         }
                     },{
                         new : true
@@ -489,6 +490,7 @@
             {
                 $sort:
                 {
+                    "updated" : -1,
                     "requestDate": -1
                 }
             },

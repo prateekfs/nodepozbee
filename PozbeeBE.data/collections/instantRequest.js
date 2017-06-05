@@ -145,10 +145,9 @@
             this.updated = new Date();
             next();
         });
-        instantRequestSchema.pre("validate", function(next){
-            this.updated = new Date();
-            next();
-        });
+    instantRequestSchema.pre('update', function() {
+        this.update({},{ $set: { updated : new Date() } });
+    });
 
     instantRequest.Model = mongoose.model("InstantRequest", instantRequestSchema);
 })(module.exports);

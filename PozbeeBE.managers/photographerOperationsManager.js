@@ -561,7 +561,8 @@
                             $set :
                             {
                                 nonEditedPhotosAdded : true,
-                                nonEditedPhotosAddedDate : new Date()
+                                nonEditedPhotosAddedDate : new Date(),
+                                updated : new Date()
                             }
                         },{
                             new : true
@@ -610,11 +611,13 @@
                             $set :
                             {
                                 editedPhotosAdded : true,
-                                editedPhotosAddedDate : new Date()
+                                editedPhotosAddedDate : new Date(),
+                                updated : new Date()
                             }
                         },
                         {
-                            new : true
+                            new : true,
+                            runValidators : true
                         })
                         .exec(function(err,instantRequest){
                             if(err){
