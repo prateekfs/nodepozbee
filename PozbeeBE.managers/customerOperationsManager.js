@@ -543,7 +543,7 @@
                     async.series([
                         function(initialCb){
                             if(include){
-                                var includingInstantReq = _.find(result, function(ir){ return ir._id.toString == include.toString() });
+                                var includingInstantReq = _.find(result, function(ir){ return ir._id.toString() == include.toString() });
                                 if(!includingInstantReq){
                                     database.InstantRequest.aggregate(
                                         {

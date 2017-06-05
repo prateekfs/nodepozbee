@@ -35,7 +35,7 @@
         <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="583" column="48" selection-start-line="583" selection-start-column="48" selection-end-line="586" selection-end-column="49" />
+              <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -104,8 +104,8 @@
       <file leaf-file-name="photographerOperationsManager.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.40816328">
-              <caret line="739" column="53" selection-start-line="739" selection-start-column="53" selection-end-line="739" selection-end-column="53" />
+            <state vertical-scroll-proportion="0.33333334">
+              <caret line="702" column="36" selection-start-line="702" selection-start-column="36" selection-end-line="702" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -189,8 +189,8 @@
         <option value="$PROJECT_DIR$/PozbeeBE.data/collections/instantRequest.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.controllers/customerController.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js" />
-        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js" />
+        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
       </list>
     </option>
   </component>
@@ -472,10 +472,22 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js</url>
+          <line>702</line>
+          <option name="timeStamp" value="844" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js</url>
+          <line>703</line>
+          <option name="timeStamp" value="846" />
+        </line-breakpoint>
+      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="841" />
+      <option name="time" value="847" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -837,15 +849,15 @@
     <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="583" column="48" selection-start-line="583" selection-start-column="48" selection-end-line="586" selection-end-column="49" />
+          <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40816328">
-          <caret line="739" column="53" selection-start-line="739" selection-start-column="53" selection-end-line="739" selection-end-column="53" />
+        <state vertical-scroll-proportion="0.33333334">
+          <caret line="702" column="36" selection-start-line="702" selection-start-column="36" selection-end-line="702" selection-end-column="36" />
           <folding />
         </state>
       </provider>
