@@ -142,6 +142,7 @@
             if (!this.photographerRequests) {
                 this.photographerRequests = [];
             }
+            this.updated = new Date();
             next();
         });
         instantRequestSchema.pre("validate", function(next){

@@ -642,6 +642,7 @@
             {
                 $sort:
                 {
+                    "updated" : -1,
                     "requestDate": -1
                 }
             },
