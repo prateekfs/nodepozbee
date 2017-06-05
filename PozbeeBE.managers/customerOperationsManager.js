@@ -581,8 +581,11 @@
                                             if(err){
                                                 initialCb(err);
                                             }else{
-                                                var includingInstantReq = includeResult[0];
-                                                result.splice(0, 0, includingInstantReq);
+                                                if(includeResult.length >0){
+                                                    var includingInstantReq = includeResult[0];
+                                                    result.splice(0, 0, includingInstantReq);
+                                                }
+
                                                 initialCb();
                                             }
                                         });
