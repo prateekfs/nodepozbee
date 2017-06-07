@@ -25,14 +25,15 @@ global.instantRequestTimers = [];
 global.NotificationEnum = Object.freeze(
     {
         "NewInstantRequest" : 1,
-        "RequestCancelled" : 2,
-        "PhotographerIsComing" : 3,
-        "PhotographerArrived": 4,
-        "PhotographingSessionStarted" :5,
-        "PhotographingSessionFinished" :6,
-        "NonEditedPhotosAdded" : 7,
-        "PhotographsSelected" : 8,
-        "EditedPhotosAdded" : 9
+        "InstantPhotographerFound" : 2,
+        "RequestCancelled" : 3,
+        "PhotographerIsComing" : 4,
+        "PhotographerArrived": 5,
+        "PhotographingSessionStarted" :6,
+        "PhotographingSessionFinished" :7,
+        "NonEditedPhotosAdded" : 8,
+        "PhotographsSelected" : 9,
+        "EditedPhotosAdded" : 10
     })
 
 global.getLocalTimeByLocation = function(location ,date){

@@ -124,7 +124,7 @@
                             photographerOperations.getPhotographerUserId(id, function(err,userId){
                                 if(!err && userId){
                                     customerController.io.of("photographer").to(userId.toString()).emit("instantRequestCancelled", instantRequestId);
-                                    customerController.iosNotification.sendNotification(userId, "Customer cancelled the request");
+                                    customerController.iosNotification.sendNotification(userId, "Customer cancelled the request", {type : global.NotificationEnum.RequestCancelled});
                                 }
                             })
                         })
@@ -210,7 +210,7 @@
                     customerController.io.of("photographer").to(userId  .toString()).emit("newInstantPhotographerRequest",userInfo);
                     customerOperations.setPhotographerAsked(mongoose.Types.ObjectId(instantRequest._id),item.photographerId, function(err){
                         if(!err){
-                            customerController.iosNotification.sendNotification(userId, "You have a instant photographer request. Answer in 15 seconds to get");
+                            customerController.iosNotification.sendNotification(userId, "You have a instant photographer request. Answer in 15 seconds to get", {type : global.NotificationEnum.NewInstantRequest});
                         }
                     });
                     timer = setTimeout(function(){
@@ -248,7 +248,7 @@
                        customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
                            if(!err && gatheredInfo){
                                customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
-                               customerController.iosNotification.sendNotification(instantRequest.userId._id, "Photographer found and is on it's way for your request");
+                               customerController.iosNotification.sendNotification(instantRequest.userId._id, "Photographer found and is on it's way for your request", {type : global.NotificationEnum.InstantPhotographerFound});
                            }
                        });
                    }
@@ -258,7 +258,7 @@
                 customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
                     if(!err && gatheredInfo){
                         customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
-                        photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the request.");
+                        photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the request.", {type : global.NotificationEnum.RequestCancelled});
                     }
                 });
             }
