@@ -675,6 +675,114 @@
             });
     }
 
+    customerOperations.getInstantRequestHistory = function(id, next){
+        database.InstantRequest.aggregate(
+            {
+                $unwind : "$photographerRequests"
+            },
+            {
+                $match : {
+                    _id : id
+                }
+            },
+            {
+                $sort:
+                {
+                    "updated" : -1,
+                    "requestDate": -1
+                }
+            },
+            {
+                $project :
+                {
+                    _id : 1,
+                    finished : 1,
+                    cancelled : 1,
+                    requestDate : 1,
+                    location : 1,
+                    arrivedDate : 1,
+                    shootingStartedDate : 1,
+                    finishedDate : 1,
+                    userId : 1,
+                    categoryId : 1,
+                    photographStyle : 1,
+                    nonEditedPhotosAdded : 1,
+                    nonEditedPhotosAddedDate :1,
+                    userChoosed : 1,
+                    userChoosedDate: 1,
+                    editedPhotosAdded : 1,
+                    editedPhotosAddedDate : 1,
+                    photographerId : 1
+                }
+            }
+        ).exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    if(result.length == 0){
+                        next(null, operationResult.createSuccesResult());
+                        return;
+                    }
+                    var instantRequest = result[0];
+                    async.series([
+                        function(cb){
+                            database.User.findOne({photographerId : instantRequest.photographerId}).populate("socialUser").exec(function(err, userResult){
+                                if(err){
+                                    cb(err);
+                                }else{
+                                    instantRequest.userName = userResult.name;
+                                    instantRequest.userEmail = userResult.email;
+                                    instantRequest.userPhoneNumber = userResult.phoneNumber;
+                                    if(userResult.socialUser != null && userResult.socialUser != undefined){
+                                        instantRequest.userPictureUri = userResult.socialUser.pictureUri;
+                                    }
+                                    cb();
+                                }
+                            })
+                        },
+                        function(cb){
+                            database.WatermarkPhotos.find({instantRequestId : instantRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                if(err){
+                                    cb(err);
+                                } else{
+                                    instantRequest.watermarkPhotos = watermarkPhotos;
+                                    cb();
+                                }
+                            });
+                        },
+                        function(cb){
+                            database.EditedPhotos.find({instantRequestId : instantRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                if(err){
+                                    cb(err);
+                                } else{
+                                    instantRequest.editedPhotos = editedPhotos;
+                                    cb();
+                                }
+                            });
+                        },
+                        function(cb){
+                            database.Category.findOne({ _id : instantRequest.categoryId}).exec(function(err,categoryResult){
+                                if(err){
+                                    cb(err);
+                                }else{
+                                    instantRequest.categoryName = categoryResult.name + (instantRequest.photographStyle == 1 ? " - Indoor" : " - Outdoor");
+                                    cb();
+                                }
+                            });
+                        }
+                    ], function(err){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(instantRequest));
+                        }
+                    });
+
+                }
+
+            });
+    }
+
     customerOperations.sortPhotographersByTheirAcceptence = function(photographerIds, excludingInstantRequestIds, next){
         excludingInstantRequestIds = excludingInstantRequestIds == null ? [] : excludingInstantRequestIds;
         database.InstantRequest.aggregate(

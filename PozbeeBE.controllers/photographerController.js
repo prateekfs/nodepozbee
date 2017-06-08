@@ -197,6 +197,18 @@
                 }
             })
         });
+
+        router.get("/getInstantRequestHistory/:id", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var id = mongoose.Types.ObjectId(req.params.id);
+            photographerOperationsManager.getInstantRequestHistory(id, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            });
+        });
+
         var cpUpload = upload.fields([{ name: 'initialPhotos', mimeType : "jpeg"}]);
         router.post("/uploadInitialPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);

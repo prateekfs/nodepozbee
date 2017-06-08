@@ -21,11 +21,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="customerController.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="customerController.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/customerController.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.27966103">
-              <caret line="242" column="34" selection-start-line="242" selection-start-column="34" selection-end-line="242" selection-end-column="34" />
+            <state vertical-scroll-proportion="-12.888889">
+              <caret line="159" column="11" selection-start-line="150" selection-start-column="8" selection-end-line="159" selection-end-column="11" />
               <folding />
             </state>
           </provider>
@@ -35,17 +35,7 @@
         <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="utils.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/mongodb/lib/utils.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="97" column="4" selection-start-line="97" selection-start-column="4" selection-end-line="97" selection-end-column="4" />
+              <caret line="783" column="5" selection-start-line="677" selection-start-column="4" selection-end-line="783" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -54,8 +44,8 @@
       <file leaf-file-name="photographerController.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-64.55556">
-              <caret line="121" column="120" selection-start-line="121" selection-start-column="120" selection-end-line="121" selection-end-column="171" />
+            <state vertical-scroll-proportion="-10.296296">
+              <caret line="202" column="41" selection-start-line="202" selection-start-column="41" selection-end-line="202" selection-end-column="41" />
               <folding />
             </state>
           </provider>
@@ -101,11 +91,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="photographerOperationsManager.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="photographerOperationsManager.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="702" column="36" selection-start-line="702" selection-start-column="36" selection-end-line="702" selection-end-column="36" />
+            <state vertical-scroll-proportion="0.33217993">
+              <caret line="633" column="33" selection-start-line="633" selection-start-column="33" selection-end-line="633" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -186,11 +176,11 @@
         <option value="$PROJECT_DIR$/PozbeeBE.data/database.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.helpers/notification/iosNotification.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.data/collections/instantRequest.js" />
-        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
-        <option value="$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js" />
-        <option value="$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.helpers/utils.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.controllers/customerController.js" />
+        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
+        <option value="$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js" />
+        <option value="$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js" />
       </list>
     </option>
   </component>
@@ -387,14 +377,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="41" y="22" width="1879" height="1178" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32779318" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32963988" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24933262" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19850984" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29547554" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.44044322" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32779318" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32963988" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -443,12 +433,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js</url>
-          <line>702</line>
+          <line>809</line>
           <option name="timeStamp" value="844" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js</url>
-          <line>703</line>
+          <line>810</line>
           <option name="timeStamp" value="846" />
         </line-breakpoint>
       </breakpoints>
@@ -790,30 +780,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="702" column="36" selection-start-line="702" selection-start-column="36" selection-end-line="702" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-64.55556">
-          <caret line="121" column="120" selection-start-line="121" selection-start-column="120" selection-end-line="121" selection-end-column="171" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/PozbeeBE.helpers/utils.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -822,10 +788,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="783" column="5" selection-start-line="677" selection-start-column="4" selection-end-line="783" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/customerController.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27966103">
-          <caret line="242" column="34" selection-start-line="242" selection-start-column="34" selection-end-line="242" selection-end-column="34" />
+        <state vertical-scroll-proportion="-12.888889">
+          <caret line="159" column="11" selection-start-line="150" selection-start-column="8" selection-end-line="159" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-10.296296">
+          <caret line="202" column="41" selection-start-line="202" selection-start-column="41" selection-end-line="202" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33217993">
+          <caret line="633" column="33" selection-start-line="633" selection-start-column="33" selection-end-line="633" selection-end-column="33" />
           <folding />
         </state>
       </provider>
