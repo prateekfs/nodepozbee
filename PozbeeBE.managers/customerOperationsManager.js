@@ -532,7 +532,8 @@
                     userChoosedDate: 1,
                     editedPhotosAdded : 1,
                     editedPhotosAddedDate : 1,
-                    photographerId : 1
+                    photographerId : 1,
+                    photographerRequests : 1
                 }
             }
         ).exec(function(err,result){
@@ -602,7 +603,7 @@
                             async.each(result, function(instantRequest, eachCb){
                                 async.series([
                                     function(cb){
-                                        database.User.findOne({photographerId : instantRequest.photographerId}).populate("socialUser").exec(function(err, userResult){
+                                        database.User.findOne({photographer : instantRequest.photographerRequests.photographerId}).populate("socialUser").exec(function(err, userResult){
                                             if(err){
                                                 cb(err);
                                             }else{

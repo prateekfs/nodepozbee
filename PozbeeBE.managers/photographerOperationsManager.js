@@ -94,7 +94,7 @@
             }
         })
     }
-    photographerOperationsManager.uploadDocumentsPhase = function(applicationId, cameraPhotos, backgroundDocs,next){
+    photographerOperationsManager.uploadDocumentsPhase = function(applicationId, cameraPhotos, location, backgroundDocs,next){
         database.PhotographerApplication.findOne({_id : mongoose.Types.ObjectId(applicationId)}).exec(function(err, applicationResult){
             if(err || !applicationResult){
                 next(err);
@@ -105,6 +105,10 @@
                 applicationResult.backgroundDocs = bacgroundDocPaths;
                 applicationResult.reviewPhase = 4;
                 applicationResult.isApproved = true;
+                applicationResult.permanentLocation = {
+                    type : "Point",
+                    coordinates : location
+                }
                 applicationResult.save(function(err,applicationResultSaveResult){
                     if(err || !applicationResultSaveResult){
                         next(err);
@@ -135,7 +139,8 @@
             function(user, photographerApplication, wf){
                 var photographer = new database.Photographer({
                     photographerApplication : photographerApplication._id,
-                    categories : photographerApplication.categories
+                    categories : photographerApplication.categories,
+                    permanentLocation : photographerApplication.permanentLocation
                 });
                 photographer.save(function(err,photographerSaveResult){
                     if(err){
@@ -933,4 +938,46 @@
             });
     }
 
+    photographerOperationsManager.getPhotographerUnavailability = function(photographerId, next){
+        database.PhotographerUnavailability.find({photographerId : photographerId}).exec(function(err,result){
+           if(err){
+               next(err);
+           }else{
+               next(null, operationResult.createSuccesResult(result));
+           }
+        });
+    }
+
+    photographerOperationsManager.setPhotographerUnavailability = function(photographerId, hoursFromGMT, dates, next){
+        database.PhotographerUnavailability.remove({photographerId : photographerId}).exec(function(err, removeResult){
+            if(err){
+                next(err);
+            } else{
+                async.each(dates, function(d, eachCb) {
+                    var photographerUnavailability = new database.PhotographerUnavailability({
+                        photographerId : photographerId,
+                        day : d.day,
+                        hours : d.hours,
+                        hoursFromGMT : hoursFromGMT,
+                        expireAt : new Date(d.day.getTime() + 60*1000)
+                    });
+
+                    photographerUnavailability.save(function(err,saveResult){
+                        if(err){
+                            eachCb(err);
+                        } else{
+                            eachCb();
+                        }
+                    });
+
+                },function(err){
+                    if(err){
+                        next(err);
+                    }else{
+                        next(null,operationResult.createSuccesResult());
+                    }
+                });
+            }
+        });
+    }
 })(module.exports);

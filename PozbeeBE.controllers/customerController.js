@@ -21,7 +21,7 @@
         router.post("/getPhotographersWithinRect", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var arrayOfCoordinates = [];
             var arrayOfRegion = [];
-            _.each(req.body["region[][]"],function(val,i){
+            _.each(req.body.region,function(val,i){
                 if((i+1)%2 == 1){
                     arrayOfCoordinates.push(Number(val));
                 }else{
@@ -31,7 +31,7 @@
                     arrayOfCoordinates = [];
                 }
             });
-            customerOperations.getPhotographersWithinRect(arrayOfRegion, function(err,result){
+            customerOperations.getPhotographersWithinRect(req.body.region, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 } else{
@@ -159,9 +159,7 @@
             });
         });
         router.post("/setSelectedWatermarkPhotos", passport.authenticate("bearer",{session : false}), function(req,res,next){
-            var selectedPhotoIds = Array.isArray(req.body["selectedWatermarkedPhotos[]"]) ? _.map(req.body["selectedWatermarkedPhotos[]"], function(id){
-               return mongoose.Types.ObjectId(id);
-            }) : [req.body["selectedWatermarkedPhotos[]"]];
+            var selectedPhotoIds = req.body.selectedWatermarkedPhotos;
             var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
             customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result, instantRequest){
                if(err){
@@ -170,8 +168,9 @@
                    var takenPhotographer = _.find(instantRequest.photographerRequests, function(req) { return req.isTaken === true; });
                    photographerOperations.getPhotographerUserId(takenPhotographer.photographerId, function(err,userId){
                        if(!err) {
-                           var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                           customerController.iosNotification.sendNotification(userId, 'Your customer from the Instant Photo Shooting from ' + date + ' has selected photos. Check it now.', {
+
+                           var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
+                           customerController.iosNotification.sendNotification(userId, 'Your customer from the Instant Photo Shooting from ' + d.dateStr + ' has selected photos. Check it now.', {
                                type: global.NotificationEnum.PhotographsSelected,
                                id: instantRequest._id.toString()
                            })

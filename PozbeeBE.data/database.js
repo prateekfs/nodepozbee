@@ -20,4 +20,5 @@
     database.InstantRequest = require("./collections/instantRequest").Model;
     database.WatermarkPhotos = require("./collections/watermarkPhotos").Model;
     database.EditedPhotos = require("./collections/editedPhotos").Model;
+    database.PhotographerUnavailability = require("./collections/photographerUnavailability").Model;
 })(module.exports);

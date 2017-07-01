@@ -2,14 +2,6 @@
     var mongoose = require('mongoose'),
         photographerApplication = require("./photographerApplication"),
         Schema = mongoose.Schema,
-        unavailabilitySchema = new Schema({
-            from:{
-                type : Date
-            },
-            to :{
-                type : Date
-            }
-        }),
         pricingSchema = new Schema({
             categoryId : {
                 type : Schema.Types.ObjectId
@@ -41,9 +33,6 @@
                 type : Schema.Types.ObjectId,
                 ref : "PhotographerApplication"
             },
-            unavailableDates : {
-                type : [unavailabilitySchema]
-            },
             pricing:{
                 type : [pricingSchema]
             },
@@ -51,6 +40,14 @@
                 type : Date
             },
             location : {
+                type : {
+                    type : String
+                },
+                coordinates : {
+                    type : [Number]
+                }
+            },
+            permanentLocation : {
                 type : {
                     type : String
                 },

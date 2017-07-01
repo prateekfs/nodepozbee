@@ -217,8 +217,8 @@
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '. Select photos you like to be retouched.',{type : global.NotificationEnum.NonEditedPhotosAdded, id : instantRequest._id.toString()})
+                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
+                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '. Select photos you like to be retouched.',{type : global.NotificationEnum.NonEditedPhotosAdded, id : instantRequest._id.toString()})
                     res.status(200).send(result);
                 }
             });
@@ -232,12 +232,44 @@
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var date = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + date + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : instantRequest._id.toString()})
+                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, new Date());
+                        photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : instantRequest._id.toString()})
                     res.status(200).send(result);
                 }
             });
         })
+
+        router.get("/getPhotographerUnavailability", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var photographerId = req.query.photographerId;
+            photographerOperationsManager.getPhotographerUnavailability(photographerId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+
+        router.post("/setPhotographerUnavailability", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
+            var hoursFromGMT = req.body.hoursFromGMT;
+            var dates = _.map(req.body.dates, function(d){
+                var date = new Date(d.day);
+                var hours = d.hours;
+
+                return { "day" : date, "hours" : hours };
+            });
+
+            photographerOperationsManager.setPhotographerUnavailability(photographerId, hoursFromGMT, dates, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+
+
 
         return router;
     }
