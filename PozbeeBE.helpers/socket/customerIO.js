@@ -36,7 +36,7 @@
                                             name : result.userId.name,
                                             category : result.categoryId.name,
                                             photographStyle : result.photographStyle == 1 ? "Indoor" : "Outdoor",
-                                            pictureUri : result.userId.socialUser == null ? null : result.userId.socialUser.pictureUri,
+                                            pictureUri : result.userId.profilePicture,
                                             location : result.location.coordinates,
                                             endingDate : new Date(result.photographerOfInterest.askedDate.getTime() + 15000)
                                         }

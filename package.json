@@ -30,6 +30,7 @@
     "passport-http-bearer": "^1.0.1",
     "passport-oauth2-client-password": "^0.1.2",
     "randomstring": "^1.1.5",
+    "request": "^2.81.0",
     "serve-favicon": "~2.3.2",
     "socket.io": "^1.7.3",
     "tz-lookup": "^6.1.0",

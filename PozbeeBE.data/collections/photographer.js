@@ -55,7 +55,11 @@
                     type : [Number]
                 }
             },
-            categories : [photographerApplication.categorySchema]
+            categories : [photographerApplication.categorySchema],
+            portfolio : {
+                link : String,
+                photos : [String]
+            }
         },{collection : "photographer"});
 
     photographerSchema.pre("validate", function(next){

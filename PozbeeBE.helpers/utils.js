@@ -1,6 +1,9 @@
 var crypto = require("crypto");
 var moment = require('moment-timezone');
 var tzlookup = require("tz-lookup");
+var request = require("request");
+var fs = require("fs");
+
 GLOBAL.randomValueBase64 = function randomValueBase64 (len) {
     return crypto.randomBytes(Math.ceil(len * 3 / 4))
         .toString('base64')   // convert to base64 format
@@ -47,3 +50,11 @@ global.getLocalTimeByLocation = function(location ,date){
     };
 }
 
+global.download = function(uri, filename, callback){
+    request.head(uri, function(err, res, body){
+        console.log('content-type:', res.headers['content-type']);
+        console.log('content-length:', res.headers['content-length']);
+
+        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    });
+};

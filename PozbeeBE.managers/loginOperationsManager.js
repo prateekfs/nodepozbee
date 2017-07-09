@@ -9,6 +9,7 @@
     var smsHelper = require("../PozbeeBE.helpers/smsHelper");
     var async = require("async");
     var mongoose = require("mongoose");
+    var request = require("request");
 
     loginOperationsManager.registerPhoneNumber = function (phoneNumber, next) {
         phoneActivation.findOne({phoneNumber: phoneNumber}).exec(function (err, phoneActivationResult) {
@@ -226,7 +227,7 @@
                     var device;
                     if (user) {
                         device = new Device({
-                            activeUserId: user._id,
+                            activeUserId: user._id
                         });
                     } else if (socialUser) {
                         device = new Device({
@@ -256,7 +257,7 @@
                     next(null, operationResult.createSuccesResult({
                         authorize: false,
                         message: "Activation successfull"
-                    }))
+                    }));
                 } else {
                     next(null, operationResult.createSuccesResult({
                         authorize: true,
@@ -373,7 +374,7 @@
             } else {
                 if (!result) {
                     next(operationResult.createErrorResult("Unknown error occured."));
-                    return
+                    return;
                 }
 
                 async.waterfall([
@@ -438,12 +439,16 @@
                                             wf(err);
                                         } else {
                                             user.socialUser = socialUserSaveResult._id;
-                                            user.save(function (err, userUpdateResult) {
-                                                if (err) {
-                                                    wf(err);
-                                                } else {
-                                                    wf(null, userUpdateResult);
-                                                }
+                                            var profilePicPath = "public/profilePictures/"+user._id.toString()+".png";
+                                            global.download(socialUser.pictureUri, profilePicPath, function(){
+                                                user.profilePicture = profilePicPath;
+                                                user.save(function (err, userSaveResult) {
+                                                    if (err) {
+                                                        wf(err);
+                                                    } else {
+                                                        wf(null, userSaveResult);
+                                                    }
+                                                });
                                             });
                                         }
                                     })
@@ -512,23 +517,50 @@
                     if (err) {
                         wf(err);
                     } else {
-                        wf(null, socialUserResult)
+                        wf(null, socialUserResult);
                     }
                 });
             },
             function (socialUser, wf) {
                 if (socialUser) {
-                    database.User.findOne({socialUser: socialUser._id}).populate("socialUser").populate("phoneActivation").exec(function (err, userResult) {
-                        if (err) {
-                            wf(err);
-                        } else {
-                            if (userResult.email != facebookData.email) {
-                                wf(operationResult.createErrorResult("This Facebook account linked with another user"));
-                            } else {
-                                wf(null, userResult);
-                            }
-                        }
+                    socialUser.userId = facebookData.id;
+                    socialUser.link = facebookData.link;
+                    socialUser.gender = facebookData.gender;
+                    socialUser.pictureUri = facebookData.pictureUri;
+                    socialUser.facebookToken = facebookData.token;
+
+                    socialUser.save(function(err,res){
+                       if(err){
+                           wf(err);
+                       } else{
+                           database.User.findOne({socialUser: socialUser._id}).populate("socialUser").populate("phoneActivation").exec(function (err, userResult) {
+                               if (err) {
+                                   wf(err);
+                               } else {
+
+                                   if (userResult.email != facebookData.email) {
+                                       wf(operationResult.createErrorResult("This Facebook account linked with another user"));
+                                   } else {
+                                       var profilePicPath = "public/profilePictures/"+ userResult._id.toString()+".png";
+
+                                       global.download(socialUser.pictureUri, profilePicPath, function(){
+                                           var profilePicEndpoint = "profilePictures/" + userResult._id.toString() + ".png";
+                                           userResult.profilePicture = profilePicEndpoint;
+                                           userResult.save(function (err, userSaveResult) {
+                                               if (err) {
+                                                   wf(err);
+                                               } else {
+                                                   wf(null, userSaveResult);
+                                               }
+                                           });
+                                       });
+
+                                   }
+                               }
+                           });
+                       }
                     });
+
                 } else {
                     database.User.findOne({email: facebookData.email}).populate("phoneActivation").exec(function (err, userResult) {
                         if (err) {
@@ -547,12 +579,17 @@
                                         wf(err);
                                     } else {
                                         userResult.socialUser = socialUserSaveResult._id;
-                                        userResult.save(function (err, userSaveResult) {
-                                            if (err) {
-                                                wf(err);
-                                            } else {
-                                                wf(null, userSaveResult);
-                                            }
+                                        var profilePicPath = "public/profilePictures/"+userResult._id.toString()+".png";
+                                        global.download(socialUser.pictureUri, profilePicPath, function(){
+                                            var profilePicEndpoint = "profilePictures/" + userResult._id.toString() + ".png";
+                                            userResult.profilePicture = profilePicEndpoint;
+                                            userResult.save(function (err, userSaveResult) {
+                                                if (err) {
+                                                    wf(err);
+                                                } else {
+                                                    wf(null, userSaveResult);
+                                                }
+                                            });
                                         });
                                     }
                                 });
@@ -580,7 +617,7 @@
                                         if (err) {
                                             wf(err);
                                         } else {
-                                            wf(null, {"deviceId": deviceSaveResult._id, "phoneNumber": user.phoneNumber, "activation" : user.phoneActivation.activationCode})
+                                            wf(null, {"deviceId": deviceSaveResult._id, "phoneNumber": user.phoneNumber, "activation" : user.phoneActivation.activationCode});
                                         }
                                     });
                                 } else {
@@ -605,7 +642,7 @@
                             if (err) {
                                 wf(err);
                             } else {
-                                wf(null, {"deviceId": deviceSaveResult._id, "phoneNumber": user.phoneNumber, "activation" : user.phoneActivation.activationCode})
+                                wf(null, {"deviceId": deviceSaveResult._id, "phoneNumber": user.phoneNumber, "activation" : user.phoneActivation.activationCode});
                             }
                         });
                     }
@@ -620,4 +657,4 @@
         })
 
     }
-})(module.exports)
+})(module.exports);

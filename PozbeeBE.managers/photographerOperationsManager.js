@@ -315,14 +315,15 @@
                     var pRequest = _.find(result.photographerRequests, function(pr){ return pr.photographerId.toString() === photographerId.toString() });
                     if (pRequest.isTaken){
                         var obj = result.toObject();
-                        database.User.populate(result.userId, {"path": "socialUser"}, function (err, userOutput) {
-                            if (userOutput) {
-                                obj.userId = userOutput.toObject();
-                                next(null, operationResult.createSuccesResult(obj));
-                            } else {
-                                next(null, operationResult.createSuccesResult(obj));
-                            }
-                        });
+                        next(null, operationResult.createSuccesResult(obj));
+                        //database.User.populate(result.userId, {"path": "socialUser"}, function (err, userOutput) {
+                        //    if (userOutput) {
+                        //        obj.userId = userOutput.toObject();
+                        //        next(null, operationResult.createSuccesResult(obj));
+                        //    } else {
+                        //        next(null, operationResult.createSuccesResult(obj));
+                        //    }
+                        //});
                     }else{
                         next(null,operationResult.createSuccesResult());
                         return;
@@ -693,9 +694,8 @@
                                     instantRequest.userName = userResult.name;
                                     instantRequest.userEmail = userResult.email;
                                     instantRequest.userPhoneNumber = userResult.phoneNumber;
-                                    if(userResult.socialUser != null && userResult.socialUser != undefined){
-                                        instantRequest.userPictureUri = userResult.socialUser.pictureUri;
-                                    }
+                                    instantRequest.userPictureUri = userResult.profilePicture;
+
                                     cb();
                                 }
                             })
@@ -872,9 +872,8 @@
                                                     instantRequest.userName = userResult.name;
                                                     instantRequest.userEmail = userResult.email;
                                                     instantRequest.userPhoneNumber = userResult.phoneNumber;
-                                                    if(userResult.socialUser != null && userResult.socialUser != undefined){
-                                                        instantRequest.userPictureUri = userResult.socialUser.pictureUri;
-                                                    }
+                                                    instantRequest.userPictureUri = userResult.profilePicture;
+
                                                     cb();
                                                 }
                                             })

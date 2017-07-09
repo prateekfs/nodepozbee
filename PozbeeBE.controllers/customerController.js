@@ -2,6 +2,7 @@
     var database = require("../PozbeeBE.data/database");
     var mongoose = require("mongoose");
     var customerOperations = require("../PozbeeBE.managers/customerOperationsManager");
+    var scheduledCustomerOperations = require("../PozbeeBE.managers/scheduledCustomerOperations");
     var photographerOperations = require("../PozbeeBE.managers/photographerOperationsManager");
     var passport = require("passport");
     var _ = require("underscore");
@@ -181,10 +182,13 @@
                }
             });
 
-        })
+        });
+
+
 
         return router;
     }
+
 
 
     customerController.nameThisMotherfucker = function(instantRequest){
@@ -214,7 +218,7 @@
                         name : instantRequest.userId.name,
                         category : instantRequest.categoryId.name,
                         photographStyle : instantRequest.photographStyle == 1 ? "Indoor" : "Outdoor",
-                        pictureUri : instantRequest.userId.socialUser == null ? null : instantRequest.userId.socialUser.pictureUri,
+                        pictureUri : instantRequest.userId.profilePicture,
                         location : instantRequest.location.coordinates
                     }
                     customerController.io.of("photographer").to(userId  .toString()).emit("newInstantPhotographerRequest",userInfo);

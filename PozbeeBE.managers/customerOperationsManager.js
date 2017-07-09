@@ -207,7 +207,6 @@
                database.User.findOne({
                    photographer : photographerId
                })
-                   .populate("socialUser")
                    .populate("photographerApplications")
                    .populate("photographer").exec(function(err,userResult){
                    if(err){
@@ -218,7 +217,7 @@
                        }else{
                            var photographerName = userResult.name;
                            var photographerNumber = userResult.phoneNumber;
-                           var photographerPhoto = userResult.socialUser != null ? userResult.socialUser.pictureUri : null;
+                           var photographerPhoto = userResult.profilePicture;
                            var category = instantRequestResult.categoryId.name + "-" + (instantRequestResult.photographStyle == 1 ? "Indoor" : "Outdoor") ;
                            var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
                            var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
@@ -603,16 +602,15 @@
                             async.each(result, function(instantRequest, eachCb){
                                 async.series([
                                     function(cb){
-                                        database.User.findOne({photographer : instantRequest.photographerRequests.photographerId}).populate("socialUser").exec(function(err, userResult){
+                                        database.User.findOne({photographer : instantRequest.photographerRequests.photographerId}).exec(function(err, userResult){
                                             if(err){
                                                 cb(err);
                                             }else{
                                                 instantRequest.userName = userResult.name;
                                                 instantRequest.userEmail = userResult.email;
                                                 instantRequest.userPhoneNumber = userResult.phoneNumber;
-                                                if(userResult.socialUser != null && userResult.socialUser != undefined){
-                                                    instantRequest.userPictureUri = userResult.socialUser.pictureUri;
-                                                }
+                                                instantRequest.userPictureUri = userResult.profilePicture;
+
                                                 cb();
                                             }
                                         })
@@ -727,16 +725,15 @@
                     var instantRequest = result[0];
                     async.series([
                         function(cb){
-                            database.User.findOne({photographerId : instantRequest.photographerId}).populate("socialUser").exec(function(err, userResult){
+                            database.User.findOne({photographerId : instantRequest.photographerId}).exec(function(err, userResult){
                                 if(err){
                                     cb(err);
                                 }else{
                                     instantRequest.userName = userResult.name;
                                     instantRequest.userEmail = userResult.email;
                                     instantRequest.userPhoneNumber = userResult.phoneNumber;
-                                    if(userResult.socialUser != null && userResult.socialUser != undefined){
-                                        instantRequest.userPictureUri = userResult.socialUser.pictureUri;
-                                    }
+                                    instantRequest.userPictureUri = userResult.profilePicture;
+
                                     cb();
                                 }
                             })

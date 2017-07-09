@@ -53,6 +53,9 @@
             photographer : {
                 type : Schema.Types.ObjectId,
                 ref : "Photographer"
+            },
+            profilePicture : {
+                type : String
             }
         },{collection : "user"});
     userSchema.pre("validate", function(next){
