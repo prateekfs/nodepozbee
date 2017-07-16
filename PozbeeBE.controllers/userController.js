@@ -5,6 +5,8 @@
     var userOperationsManager = require("../PozbeeBE.managers/userOperationsManager");
     var passport = require("passport");
     var mongoose = require("mongoose");
+    var multer = require("multer");
+    var upload = multer({dest : "./public/profilePictures"});
     userController.init = function(router){
         router.get("/registerPhone/:phoneNumber", function(req,res,next){
             var phoneNumber = req.params.phoneNumber;
@@ -127,7 +129,19 @@
                 }
             });
         });
+        var cpUpload = upload.fields([{ name: 'profilePicture', mimeType : "image/jpeg"}]);
+        router.post("/uploadProfilePicture", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
+            var userId = req.user._id
+            var photo = req.files.profilePicture[0].filename;
+            userOperationsManager.uploadProfilePicture(userId, photo, function(err,result){
+                if(err){
+                    next(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            } )
 
+        });
         //app.get("/campaign/getUserPopulationRange/:venueId/:meters",
         //    passport.authenticate("bearer", { session : false }),
         //    mustbe.authorized("roles.pusher",

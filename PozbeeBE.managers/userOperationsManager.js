@@ -4,7 +4,7 @@
     var async = require("async");
     var mongoose = require("mongoose");
     var _ = require("underscore");
-
+    var fs = require("fs");
     userOperationsManager.checkIfUserUpdated = function(id, version, next){
         database.User.findOne({_id : mongoose.Types.ObjectId(id)}).populate("socialUser").populate("photographerApplications").populate("photographer").exec(function(err,userResult){
            if(err || !userResult){
@@ -70,6 +70,33 @@
                   next(null, operationResult.createErrorResult());
               }
           }
+        })
+    }
+
+    userOperationsManager.uploadProfilePicture = function(userId, fileName, next){
+        database.User.findOne({_id : userId}).exec(function(err,userResult){
+            if(err){
+                next(err);
+            }else{
+                try {
+                    fs.unlinkSync("./public/" + userResult.profilePicture);
+                }
+                catch(err){
+
+                }
+                finally{
+                    userResult.profilePicture = "profilePictures/" + fileName;
+
+                    userResult.save(function(err,saveRes){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(saveRes.profilePicture));
+                        }
+                    })
+                }
+
+            }
         })
     }
 
