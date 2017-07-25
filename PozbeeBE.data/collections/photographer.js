@@ -2,6 +2,11 @@
     var mongoose = require('mongoose'),
         photographerApplication = require("./photographerApplication"),
         Schema = mongoose.Schema,
+        portfolioSchema = new Schema({
+            order : Number,
+            path : String,
+            categoryId : Schema.Types.ObjectId
+        }),
         pricingSchema = new Schema({
             categoryId : {
                 type : Schema.Types.ObjectId
@@ -47,6 +52,14 @@
                     type : [Number]
                 }
             },
+            camera : {
+                model : {
+                    type : String
+                },
+                photoPath : {
+                    type : String
+                }
+            },
             permanentLocation : {
                 type : {
                     type : String
@@ -57,8 +70,10 @@
             },
             categories : [photographerApplication.categorySchema],
             portfolio : {
-                link : String,
-                photos : [String]
+                type : [portfolioSchema]
+            },
+            rating : {
+                type : Number
             }
         },{collection : "photographer"});
 

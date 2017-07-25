@@ -86,7 +86,7 @@
                 }
                 finally{
                     userResult.profilePicture = "profilePictures/" + fileName;
-
+                    userResult.__v = userResult.__v + 1;
                     userResult.save(function(err,saveRes){
                         if(err){
                             next(err);
@@ -98,6 +98,32 @@
 
             }
         })
+    }
+
+    userOperationsManager.updateUserProfile = function(userId, cityName, placeId, about, funFacts, next){
+        database.User.update(
+            {
+                _id : userId
+            }, {
+                $set : {
+                    city : {
+                        name : cityName,
+                        placeId : placeId
+                    },
+                    about : about,
+                    funFacts : funFacts
+                },
+                $inc : {
+                    __v : 1
+                }
+            }
+        ).exec(function(err,result){
+                if(err){
+                    next(err);
+                }else{
+                    next(null, operationResult.createSuccesResult());
+                }
+            })
     }
 
 })(module.exports)

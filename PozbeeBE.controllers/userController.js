@@ -135,12 +135,28 @@
             var photo = req.files.profilePicture[0].filename;
             userOperationsManager.uploadProfilePicture(userId, photo, function(err,result){
                 if(err){
-                    next(err);
+                    res.status(444).send(err);
                 } else{
                     res.status(200).send(result);
                 }
             } )
 
+        });
+
+        router.post("/updateUserProfile", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            var cityName = req.body.cityName == "" ? null : req.body.cityName;
+            var cityPlaceId = req.body.placeId == "" ? null : req.body.placeId;
+            var about = req.body.about == "" ? null : req.body.about;
+            var funFacts = req.body.funFacts == "" ? null : req.body.funFacts;
+
+            userOperationsManager.updateUserProfile(userId, cityName, cityPlaceId, about, funFacts, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
         });
         //app.get("/campaign/getUserPopulationRange/:venueId/:meters",
         //    passport.authenticate("bearer", { session : false }),

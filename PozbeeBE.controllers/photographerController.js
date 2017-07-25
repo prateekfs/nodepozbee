@@ -7,6 +7,8 @@
     var multer = require("multer");
     var upload = multer({dest : "./uploads/initialPhotos"});
     var editedUpload = multer({dest : "./uploads/editedPhotos"});
+    var cameraUpload = multer({dest : "./public/camera"});
+    var portfolioUpload = multer({dest : "./public/portfolio"});
     var mongoose = require("mongoose");
     var iosNotification;
 
@@ -269,7 +271,32 @@
             })
         });
 
+        var cpUpload = cameraUpload.fields([{ name: 'cameraPhoto', mimeType : "image/jpeg"}]);
+        router.post("/uploadPhotographerCamera", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
+            var photographerId = req.body.photographerId;
+            var filePath = req.files.cameraPhoto[0].filename;
+            var model = req.body.model;
+            photographerOperationsManager.updateCamera(photographerId, model, filePath, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            });
+        });
 
+        var pUpload = portfolioUpload.fields([{name : 'portfolioPhoto', mimeType : 'image/jpeg'}]);
+        router.post("/updatePortfolio", pUpload, passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
+            var filePaths = req.files.portfolioPhoto;
+            photographerOperationsManager.updatePortfolio(photographerId, filePaths, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            });
+        });
 
         return router;
     }

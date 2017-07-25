@@ -21,4 +21,5 @@
     database.WatermarkPhotos = require("./collections/watermarkPhotos").Model;
     database.EditedPhotos = require("./collections/editedPhotos").Model;
     database.PhotographerUnavailability = require("./collections/photographerUnavailability").Model;
+    database.Portfolio = require("./collections/portfolio").Model;
 })(module.exports);

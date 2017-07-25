@@ -56,6 +56,23 @@
             },
             profilePicture : {
                 type : String
+            },
+            city : {
+                name : {
+                    type : String
+                },
+                placeId : {
+                    type : String
+                }
+            },
+            about : {
+                type : String
+            },
+            funFacts : {
+                type : String
+            },
+            rating : {
+                type : Number
             }
         },{collection : "user"});
     userSchema.pre("validate", function(next){

@@ -36,7 +36,8 @@ app.use('/users', users);
 app.use('/api/images', express.static('public/images'));
 app.use('/api/uploads', express.static('uploads'));
 app.use('/api/profilePictures', express.static('public/profilePictures'));
-
+app.use('/api/cameraPhotos', express.static('public/camera'));
+app.use('/api/portfolio', express.static('public/portfolio'));
 app.controllers = require("./PozbeeBE.controllers");
 app.controllers.init(app);
 

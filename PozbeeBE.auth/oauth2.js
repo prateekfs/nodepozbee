@@ -9,6 +9,7 @@
     var RefreshToken = require('../PozbeeBE.data/collections/refreshToken').Model;
     var Device = require("../PozbeeBE.data/collections/device").Model;
     var Photographer = require("../PozbeeBE.data/collections/photographer").Model;
+    var Portfolio = require("../PozbeeBE.data/collections/portfolio").Model;
     var _ = require("underscore");
     var mongoose = require("mongoose");
 
@@ -97,25 +98,58 @@
                     return done(false);
                 }
                 var usr = user.toObject();
+                if (usr.photographer){
+                    Portfolio.find({photographerId : usr.photographer._id}).exec(function(err,portfolioResult){
+                        if(err){
+                            var err = new oauth2orize.TokenError(
+                                'Invalid scope: you provided an empty set of scopes',
+                                'invalid_scope'
+                            );
 
-                if (usr.photographerApplications && usr.photographerApplications.length > 0){
-                    var photographerApplication = _.sortBy(usr.photographerApplications, function (application) {
-                        return application.createdDate
-                    }).reverse()[0];
-                    delete usr.photographerApplications;
+                            return done(err);
+                        }else{
+                            usr.photographer.portfolio = portfolioResult;
+                            if (usr.photographerApplications && usr.photographerApplications.length > 0){
+                                var photographerApplication = _.sortBy(usr.photographerApplications, function (application) {
+                                    return application.createdDate
+                                }).reverse()[0];
+                                delete usr.photographerApplications;
 
-                    usr.photographerApplication = photographerApplication;
+                                usr.photographerApplication = photographerApplication;
+                            }
+
+                            var model = {
+                                userId: user._id,
+                                clientId: params.client.clientId,
+                                deviceId : params.deviceId
+                            };
+
+                            Device.update({_id : mongoose.Types.ObjectId(params.deviceId)},{$set : {isActive : true}}).exec();
+
+                            generateTokens(model,usr,done);
+                        }
+                    })
+                }else{
+                    if (usr.photographerApplications && usr.photographerApplications.length > 0){
+                        var photographerApplication = _.sortBy(usr.photographerApplications, function (application) {
+                            return application.createdDate
+                        }).reverse()[0];
+                        delete usr.photographerApplications;
+
+                        usr.photographerApplication = photographerApplication;
+                    }
+
+                    var model = {
+                        userId: user._id,
+                        clientId: params.client.clientId,
+                        deviceId : params.deviceId
+                    };
+
+                    Device.update({_id : mongoose.Types.ObjectId(params.deviceId)},{$set : {isActive : true}}).exec();
+
+                    generateTokens(model,usr,done);
                 }
 
-                var model = {
-                    userId: user._id,
-                    clientId: params.client.clientId,
-                    deviceId : params.deviceId
-                };
-
-                Device.update({_id : mongoose.Types.ObjectId(params.deviceId)},{$set : {isActive : true}}).exec();
-
-                generateTokens(model,usr,done);
             });
         })
 
