@@ -1013,9 +1013,12 @@
         })
     }
 
-    photographerOperationsManager.updatePortfolio = function(photographerId, files, next){
+    photographerOperationsManager.updatePortfolio = function(photographerId, exceptList, files, next){
         database.Portfolio.find({
-            photographerId : photographerId
+            photographerId : photographerId,
+            _id : {
+                $nin : exceptList
+            }
         }).exec(function(err, result){
             if(err){
                 next(err);
@@ -1027,50 +1030,55 @@
                     catch(err){ }
                     finally{ }
                 });
-                database.Portfolio.remove({photographerId : photographerId}).exec(function(err,result){
+                database.Portfolio.remove({photographerId : photographerId, _id : { $nin : exceptList }}).exec(function(err,result){
                     if(err){
                         next(err);
                     }else{
-                        async.each(files, function(file, cb){
-                            var index = files.indexOf(file) + 1;
-                            var categoryId = file.originalname;
-                            var path = "portfolio/" + file.filename;
-                            var portfolioItem = new database.Portfolio({
-                                photographerId : photographerId,
-                                categoryId : categoryId,
-                                path : path,
-                                created : new Date(),
-                                order : index
-                            });
+                        if (files == undefined || files == null){
+                            next(null, operationResult.createSuccesResult());
+                        }else{
+                            async.each(files, function(file, cb){
+                                var index = Number(file.originalname.split("-")[1]);
+                                var categoryId = mongoose.Types.ObjectId(file.originalname.split("-")[0]);
+                                var path = "portfolio/" + file.filename;
+                                var portfolioItem = new database.Portfolio({
+                                    photographerId : photographerId,
+                                    categoryId : categoryId,
+                                    path : path,
+                                    created : new Date(),
+                                    order : index
+                                });
 
-                            portfolioItem.save(function(err,saveResult){
+                                portfolioItem.save(function(err,saveResult){
+                                    if(err){
+                                        cb(err);
+                                    }else{
+                                        cb();
+                                    }
+                                });
+                            }, function(err){
                                 if(err){
-                                    cb(err);
+                                    next(err);
                                 }else{
-                                    cb();
+                                    database.Photographer.findOneAndUpdate({_id : photographerId}, { $inc : {__v : 1} },{new : true}).exec(function(err,updateResult){
+                                        if(err){
+                                            next(err);
+                                        }else{
+                                            database.Portfolio.find({photographerId : photographerId}).exec(function(err, portfolioResult){
+                                                if(err){
+                                                    next(err);
+                                                } else{
+                                                    next(null, operationResult.createSuccesResult({ version : updateResult.__v, portfolio : portfolioResult}));
+                                                }
+                                            });
+
+                                        }
+                                    })
+
                                 }
                             });
-                        }, function(err){
-                            if(err){
-                                next(err);
-                            }else{
-                                database.Photographer.findOneAndUpdate({_id : photographerId}, { $inc : {__v : 1} },{new : true}).exec(function(err,updateResult){
-                                    if(err){
-                                        next(err);
-                                    }else{
-                                        database.Portfolio.find({photographerId : photographerId}).exec(function(err, portfolioResult){
-                                           if(err){
-                                               next(err);
-                                           } else{
-                                               next(null, operationResult.createSuccesResult({ version : updateResult.__v, portfolio : portfolioResult }));
-                                           }
-                                        });
+                        }
 
-                                    }
-                                })
-
-                            }
-                        });
                     }
                 })
             }

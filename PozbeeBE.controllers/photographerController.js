@@ -288,8 +288,14 @@
         var pUpload = portfolioUpload.fields([{name : 'portfolioPhoto', mimeType : 'image/jpeg'}]);
         router.post("/updatePortfolio", pUpload, passport.authenticate("bearer", {session : false}), function(req,res,next){
             var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
+            var exceptList = _.map(_.filter(req.body.exceptList.split(" "), function(s){
+               return s.length == 24;
+            }), function(s){
+                return mongoose.Types.ObjectId(s);
+            } );
+
             var filePaths = req.files.portfolioPhoto;
-            photographerOperationsManager.updatePortfolio(photographerId, filePaths, function(err,result){
+            photographerOperationsManager.updatePortfolio(photographerId, exceptList, filePaths, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 } else{
