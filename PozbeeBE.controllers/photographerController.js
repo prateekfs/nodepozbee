@@ -293,9 +293,20 @@
             }), function(s){
                 return mongoose.Types.ObjectId(s);
             } );
+            var pricingList = _.map(_.filter(req.body.pricingList.split(" "), function(s){
+                return s.length > 0
+            }), function(s){
+                var splittedArray = s.split("-");
+                var categoryId = mongoose.Types.ObjectId(splittedArray[0]);
+                var price = Number(splittedArray[1]);
+                var photoCount = Number(splittedArray[2]);
+
+                return { "categoryId" : categoryId, "price" : price, "leastPhotoCount" : photoCount };
+            })
+
 
             var filePaths = req.files.portfolioPhoto;
-            photographerOperationsManager.updatePortfolio(photographerId, exceptList, filePaths, function(err,result){
+            photographerOperationsManager.updatePortfolio(photographerId, pricingList, exceptList, filePaths, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 } else{

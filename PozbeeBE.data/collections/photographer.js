@@ -11,13 +11,13 @@
             categoryId : {
                 type : Schema.Types.ObjectId
             },
-            style : {
-                type : Number
-            },
             price : {
                 type : Number
+            },
+            leastPhotoCount : {
+                type : Number
             }
-        }),
+        },{ _id : false }),
         photographerSchema= new Schema({
             created : {
                 type : Date,

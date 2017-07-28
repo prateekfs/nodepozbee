@@ -1013,7 +1013,7 @@
         })
     }
 
-    photographerOperationsManager.updatePortfolio = function(photographerId, exceptList, files, next){
+    photographerOperationsManager.updatePortfolio = function(photographerId, pricingList, exceptList, files, next){
         database.Portfolio.find({
             photographerId : photographerId,
             _id : {
@@ -1035,7 +1035,24 @@
                         next(err);
                     }else{
                         if (files == undefined || files == null){
-                            next(null, operationResult.createSuccesResult());
+                            database.Portfolio.find({photographerId : photographerId}).exec(function(err, portfolioResult){
+                                if(err){
+                                    next(err);
+                                } else{
+                                    database.Photographer.update({_id : photographerId}, {$set : {pricing : pricingList}}).exec(function(err,updateResult){
+                                        if(err){
+                                            cb(err);
+                                        }else{
+                                            if (updateResult.nModified > 0){
+                                                next(null, operationResult.createSuccesResult({ portfolio : portfolioResult}));
+                                            }else{
+                                                cb(operationResult.createErrorResult());
+                                            }
+                                        }
+                                    })
+
+                                }
+                            });
                         }else{
                             async.each(files, function(file, cb){
                                 var index = Number(file.originalname.split("-")[1]);
@@ -1060,7 +1077,7 @@
                                 if(err){
                                     next(err);
                                 }else{
-                                    database.Photographer.findOneAndUpdate({_id : photographerId}, { $inc : {__v : 1} },{new : true}).exec(function(err,updateResult){
+                                    database.Photographer.findOneAndUpdate({_id : photographerId}, { $inc : {__v : 1}, $set : {pricing : pricingList} },{new : true}).exec(function(err,updateResult){
                                         if(err){
                                             next(err);
                                         }else{
