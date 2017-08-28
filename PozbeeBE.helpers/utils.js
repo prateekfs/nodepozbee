@@ -58,3 +58,13 @@ global.download = function(uri, filename, callback){
         request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
     });
 };
+
+function isBlank(str) {
+    return (!str || /^\s*$/.test(str));
+}
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
+String.prototype.isEmpty = function() {
+    return (this.length === 0 || !this.trim());
+};

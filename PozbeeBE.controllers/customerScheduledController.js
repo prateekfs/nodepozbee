@@ -23,8 +23,8 @@
             var date = req.query.date;
             var categoryId = mongoose.Types.ObjectId(req.query.categoryId);
             var location = _.map(req.query.location, function(a) { return Number(a) });
-
-            scheduledCustomerOperations.getPhotographersToSchedule(date, categoryId, location, function(err, result){
+            var hours = Number(req.query.hours);
+            scheduledCustomerOperations.getPhotographersToSchedule(date, hours, categoryId, location, function(err, result){
                 if(err){
                     res.status(444).send(err);
                 }else{

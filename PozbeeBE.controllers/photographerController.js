@@ -288,11 +288,26 @@
         var pUpload = portfolioUpload.fields([{name : 'portfolioPhoto', mimeType : 'image/jpeg'}]);
         router.post("/updatePortfolio", pUpload, passport.authenticate("bearer", {session : false}), function(req,res,next){
             var photographerId = mongoose.Types.ObjectId(req.body.photographerId);
-            var exceptList = _.map(_.filter(req.body.exceptList.split(" "), function(s){
-               return s.length == 24;
-            }), function(s){
-                return mongoose.Types.ObjectId(s);
-            } );
+            var orderList = [];
+            var exceptList = [];
+            if(req.body.exceptList) {
+                var array = req.body.exceptList.split(" ");
+                for (i in array) {
+                    if (array[i] !== undefined && array[i] !== "" && array[i] !== " ") {
+                        if (array[i].split("-").length == 2) {
+                            var idStr = array[i].split("-")[0];
+
+                            var id = mongoose.Types.ObjectId(idStr);
+                            var order = Number(array[i].split("-")[1]);
+                            orderList.push({id: id, order: order});
+                        } else {
+                            var id = mongoose.Types.ObjectId(array[i]);
+                        }
+                        exceptList.push(id);
+                    }
+                }
+            }
+
             var pricingList = _.map(_.filter(req.body.pricingList.split(" "), function(s){
                 return s.length > 0
             }), function(s){
@@ -306,7 +321,7 @@
 
 
             var filePaths = req.files.portfolioPhoto;
-            photographerOperationsManager.updatePortfolio(photographerId, pricingList, exceptList, filePaths, function(err,result){
+            photographerOperationsManager.updatePortfolio(photographerId, pricingList, exceptList, orderList, filePaths, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 } else{
