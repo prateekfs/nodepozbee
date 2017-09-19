@@ -1128,5 +1128,157 @@
             }
         })
     }
+    photographerOperationsManager.getPhotographersNotAnsweredScheduledRequests = function(exceptList, photographerId, next){
+        database.ScheduledRequest.find({
+            _id : {
+                $nin : exceptList
+            },
+            photographerId : photographerId,
+            isAnswered : false,
+            willBeDecidedLater : false
+        }).populate("userId").populate("categoryId").exec(function(err,scheduledRequests){
+           if(err){
+               next(err)
+           }else{
+                next(null, operationResult.createSuccesResult(scheduledRequests));
+           }
+        });
+    }
+
+    photographerOperationsManager.answerScheduledRequestLater = function(requestId, next){
+        database.ScheduledRequest.findOne({ _id : requestId }).exec(function(err, scheduledRequest){
+            if(err){
+                next(err);
+            } else{
+                scheduledRequest.willBeDecidedLater = true
+                scheduledRequest.save(function(err, saved){
+                   if(err){
+                       next(err);
+                   } else{
+                       next(null, operationResult.createSuccesResult());
+                   }
+                });
+            }
+
+        });
+    }
+
+    photographerOperationsManager.answerScheduledRequest = function(requestId, response, next){
+        database.ScheduledRequest.findOne({ _id : requestId }).exec(function(err, scheduledRequest){
+           if(err){
+               next(err);
+           } else{
+               async.waterfall([ function(cb){
+                   if (response === true){
+                       scheduledRequest.isAnswered = true;
+                       scheduledRequest.accepted = true;
+                   }
+                   cb(null);
+               }, function(cb){
+                    if(response === false){
+                        scheduledRequest.isAnswered = true;
+                        scheduledRequest.accepted = false;
+                        var list = []
+                        for (i = 0; i < scheduledRequest.hours; i++){
+                            var d = new Date(scheduledRequest.sessionDate.getTime() + i*60*60*1000);
+                            var x = new Date(JSON.parse(JSON.stringify(d)));
+                            x.setUTCHours(0);
+                            var index = _.findIndex(list, function(d){
+                                return d.day.toDateString() == x.toDateString()
+                            });
+                            if (index == -1){
+                                list.push({ day : x, hours : [d.getUTCHours()] });
+                            }else{
+                                list[index].hours.push(d.getUTCHours())
+                            }
+                        }
+
+                        var jobs = _.filter(global.scheduledRequestCrons, function(src){
+                            return src.scheduleId == requestId.toString();
+                        });
+                        _.each(jobs, function(src){
+                            src.cronJob.stop();
+                        });
+
+                        for(i = 0; i < jobs.length; i ++ ){
+                            var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                return c.scheduleId == requestId.toString()
+                            });
+                            if (index != -1){
+                                global.scheduledRequestCrons.splice(index, 1);
+                            }
+                        }
+
+                        cb(null, list)
+                    }else{
+                        cb(null, null);
+                    }
+
+               }, function(list, cb){
+                    if(list){
+                        async.each(list, function(d, eachCb){
+                            var day = d.day;
+                            var hours = d.hours;
+                            database.PhotographerUnavailability.findOne({photographerId : scheduledRequest.photographerId, day : day}).exec(function(err,result){
+                               if(err || !result){
+                                   eachCb(err);
+                               }else{
+                                   for (i =0; i < hours.length; i++){
+                                       var h = hours[i];
+                                       var index = result.hours.findIndex(function(hour){
+                                           return hour == h;
+                                       });
+                                       if(index != -1){
+                                           result.hours.splice(index,1);
+                                       }
+                                   }
+                                   if(result.hours.length == 0){
+                                       result.remove(function(err,removeRes){
+                                           if(err){
+                                               eachCb(err);
+                                           }else{
+                                               eachCb();
+                                           }
+                                       })
+                                   }else{
+                                       result.save(function(err, updateResult){
+                                          if(err){
+                                              eachCb(err);
+                                          } else{
+                                              eachCb();
+                                          }
+                                       });
+                                   }
+
+                               }
+                            });
+                        }, function(err){
+                            if(err){
+                                cb(err);
+                            }else{
+                                cb();
+                            }
+                        });
+                    }else{
+                        cb();
+                    }
+               }], function(err){
+                    if(err){
+                        next(err);
+                    }else{
+                        scheduledRequest.save(function(err,saveResult){
+                            if(err){
+                                next(err);
+                            }else{
+                                next(null, operationResult.createSuccesResult());
+                            }
+                        })
+                    }
+               })
+
+           }
+
+        });
+    }
 
 })(module.exports);

@@ -234,7 +234,7 @@
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, new Date());
+                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
                         photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : instantRequest._id.toString()})
                     res.status(200).send(result);
                 }
@@ -330,6 +330,42 @@
             });
         });
 
+        router.get("/getPhotographersNotAnsweredScheduledRequests", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.query.photographerId);
+            var exceptList = _.map(req.query.except, function(s){ return mongoose.Types.ObjectId(s); })
+            photographerOperationsManager.getPhotographersNotAnsweredScheduledRequests(exceptList, photographerId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+        router.post("/answerScheduledRequestLater", passport.authenticate("bearer",{ session : false }), function(req,res, next){
+            var requestId = mongoose.Types.ObjectId(req.body.requestId);
+            photographerOperationsManager.answerScheduledRequestLater(requestId, function(err, result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        })
+
+        router.post("/answerScheduledRequest", passport.authenticate("bearer", { session : false }), function(req, res, next){
+            var scheduledRequestId = mongoose.Types.ObjectId(req.body.requestId);
+            var response = req.body.response;
+            photographerOperationsManager.answerScheduledRequest(scheduledRequestId, response, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        })
+
+
         return router;
     }
+
 })(module.exports);

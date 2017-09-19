@@ -22,4 +22,5 @@
     database.EditedPhotos = require("./collections/editedPhotos").Model;
     database.PhotographerUnavailability = require("./collections/photographerUnavailability").Model;
     database.Portfolio = require("./collections/portfolio").Model;
+    database.ScheduledRequest = require("./collections/scheduledRequest").Model;
 })(module.exports);

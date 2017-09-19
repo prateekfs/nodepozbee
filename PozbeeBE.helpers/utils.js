@@ -25,6 +25,7 @@ GLOBAL.Dictionary = function Dictionary() {
 global.METERS_PER_MILE = 1609.344;
 
 global.instantRequestTimers = [];
+global.scheduledRequestCrons = [];
 global.NotificationEnum = Object.freeze(
     {
         "NewInstantRequest" : 1,
@@ -36,7 +37,8 @@ global.NotificationEnum = Object.freeze(
         "PhotographingSessionFinished" :7,
         "NonEditedPhotosAdded" : 8,
         "PhotographsSelected" : 9,
-        "EditedPhotosAdded" : 10
+        "EditedPhotosAdded" : 10,
+        "NewScheduledRequest" : 11
     })
 
 global.getLocalTimeByLocation = function(location ,date){

@@ -10,6 +10,7 @@
     var customerScheduledController = require("./customerScheduledController");
     photographerController.iosNotification = iosNotification;
     customerController.iosNotification = iosNotification;
+    customerScheduledController.iosNotification = iosNotification;
 
     controllers.init = function(app, io){
         app.use("/api/client", clientController.init(router));

@@ -5,12 +5,96 @@
     var _ = require("underscore");
     var async = require("async");
     var moment = require("moment");
+    var cron = require("cron");
+
+
+
+
+    scheduledCustomerOperations.scheduleSession = function(userId, photographerId, date, hours, unavailabilityFormattedDates, hoursFromGMT, location, categoryId, next){
+        database.Photographer.findOne({_id : photographerId}).exec(function(err,photographer){
+            if(err){
+                next(err);
+            }else{
+                var d = new Date(date);
+                d.setUTCHours(0,0,0);
+                var requestLocalDate = global.getLocalTimeByLocation(location, new Date(date)).date;
+                database.PhotographerUnavailability.findOne({
+                    photographerId : photographer._id,
+                    day : d
+                }).exec(function(err,unavailability) {
+                    if(err){
+                        next(err);
+                    }else{
+                        if(checkAvailability(photographer, requestLocalDate, hours, unavailability)){
+                            next(null, operationResult.createErrorResult("Photographer is not available", null));
+                        }else{
+                            async.each(unavailabilityFormattedDates, function(unavailabilityFormattedDate, eachCb){
+                                database.PhotographerUnavailability.findOne({ photographerId : photographerId, day : unavailabilityFormattedDate.day }).exec(function(err,unavailability){
+                                    if(err){
+                                        eachCb(err);
+                                    }else{
+                                        var u;
+                                        if (unavailability){
+                                            u = unavailability;
+                                            unavailability.hours = unavailability.hours.concat(unavailabilityFormattedDate.hours);
+                                        }else{
+                                            u = new database.PhotographerUnavailability({
+                                                photographerId : photographerId,
+                                                day : unavailabilityFormattedDate.day,
+                                                hours : unavailabilityFormattedDate.hours,
+                                                hoursFromGMT : hoursFromGMT,
+                                                expireAt : new Date(unavailabilityFormattedDate.day.getTime() + 60*1000)
+                                            });
+                                        }
+                                        u.save(function(err,saveResult){
+                                           if(err){
+                                               eachCb(err);
+                                           } else{
+                                               eachCb();
+                                           }
+                                        });
+                                    }
+                                })
+                            },function(err){
+                                if(err){
+                                    next(err);
+                                }else{
+                                    var scheduledRequest = new database.ScheduledRequest({
+                                        requestDate : new Date(),
+                                        userId : userId,
+                                        categoryId : categoryId,
+                                        sessionDate : date,
+                                        location : {
+                                            type : "Point",
+                                            coordinates : location
+                                        },
+                                        photographerId : photographerId,
+                                        hours : hours
+                                    })
+                                    scheduledRequest.save(function(err,scheduledRequestResult){
+                                       if(err){
+                                           next(err);
+                                       } else{
+                                           next(null, operationResult.createSuccesResult(),scheduledRequestResult);
+                                       }
+                                    });
+                                }
+                            });
+
+                        }
+                    }
+                })
+
+
+            }
+        })
+    }
 
     scheduledCustomerOperations.getPhotographersToSchedule = function(date, hours, categoryId, location, next){
         var d = new Date(date);
         d.setUTCHours(0,0,0);
         var requestLocalDate = global.getLocalTimeByLocation(location, new Date(date)).date;
-        async.waterfall([
+        async.waterfall ([
             function(cb){
                 database.Photographer.find({
                     permanentLocation : {
@@ -130,6 +214,9 @@
     }
 
     function checkAvailability(photographer, requestLocalDate, hours, unavailability){
+        if (!unavailability){
+            return false;
+        }
         var proceedBreak = false;
         for (i = 0; i < hours; i++){
             var d = requestLocalDate.setTime(requestLocalDate.getTime() + (i*60*60*1000));
@@ -151,6 +238,7 @@
 
         return proceedBreak
     }
+
 
 
 })(module.exports);

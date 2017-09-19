@@ -26,6 +26,9 @@
             hoursFromGMT : {
                 type : Number,
                 required : true
+            },
+            scheduledSession : {
+                type : Boolean
             }
         },{collection : "photographerUnavailability"});
 
