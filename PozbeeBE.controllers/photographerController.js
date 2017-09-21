@@ -142,13 +142,26 @@
                 }
             })
         });
+
+        router.get("/checkIfPhotographerHasOngoingScheduledRequest/:photographerId", passport.authenticate("bearer", { session : false }), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.params.photographerId);
+            photographerOperationsManager.checkIfPhotographerHasOngoingScheduledRequest(photographerId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
+        });
+
         router.get("/informCustomer",passport.authenticate("bearer", {session : false}), function(req,res,next){
             var userId = mongoose.Types.ObjectId(req.query.userId);
             photographerController.iosNotification.sendNotification(userId, "Photographer is coming", {type : global.NotificationEnum.PhotographerIsComing});
         });
         router.get("/confirmArrivalOfPhotographer", passport.authenticate("bearer", {session : false}), function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
-            photographerOperationsManager.confirmArrivalOfPhotographer(instantRequestId, function(err,result){
+            var instantRequestId = req.query.instantRequestId != undefined ? mongoose.Types.ObjectId(req.query.instantRequestId) : null;
+            var scheduledRequestId = req.query.scheduledRequestId != undefined ? mongoose.Types.ObjectId(req.query.scheduledRequestId) : null;
+            photographerOperationsManager.confirmArrivalOfPhotographer(instantRequestId, scheduledRequestId, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 }else{
@@ -161,8 +174,9 @@
             });
         });
         router.get("/startPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
-            photographerOperationsManager.startPhotoShooting(instantRequestId, function(err,result){
+            var instantRequestId = req.query.instantRequestId != undefined ? mongoose.Types.ObjectId(req.query.instantRequestId) : null;
+            var scheduledRequestId = req.query.scheduledRequestId != undefined ? mongoose.Types.ObjectId(req.query.scheduledRequestId) : null;
+            photographerOperationsManager.startPhotoShooting(instantRequestId, scheduledRequestId, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 }else{
@@ -176,8 +190,9 @@
         });
 
         router.get("/finishPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
-            photographerOperationsManager.finishPhotoShooting(instantRequestId, function(err,result){
+            var instantRequestId = req.query.instantRequestId != undefined ? mongoose.Types.ObjectId(req.query.instantRequestId) : null;
+            var scheduledRequestId = req.query.scheduledRequestId != undefined ? mongoose.Types.ObjectId(req.query.scheduledRequestId) : null;
+            photographerOperationsManager.finishPhotoShooting(instantRequestId, scheduledRequestId, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 }else{

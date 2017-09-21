@@ -156,6 +156,11 @@
                                         if(!err){
                                             obj.foundPhotographerInformation = result
                                             customerScheduledController.io.of("customer").to(userId).emit("scheduledRequestStarted", obj);
+                                            photographerOperations.getPhotographerUserId(scheduledRequest.photographerId , function(err, photographerUserId){
+                                                if(!err && photographerUserId){
+                                                    customerScheduledController.io.of("photographer").to(photographerUserId.toString()).emit("scheduledRequestStarted", obj);
+                                                }
+                                            });
                                             var index = _.findIndex(global.scheduledRequestCrons, function (c) {
                                                 return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
                                             });
@@ -292,6 +297,12 @@
                                         if(!err){
                                             obj.foundPhotographerInformation = result
                                             customerScheduledController.io.of("customer").to(scheduledRequest.userId.toString()).emit("scheduledRequestStarted", obj);
+                                            photographerOperations.getPhotographerUserId(scheduledRequest.photographerId , function(err, photographerUserId){
+                                                if(!err && photographerUserId){
+                                                    customerScheduledController.io.of("photographer").to(photographerUserId.toString()).emit("scheduledRequestStarted", obj);
+                                                }
+                                            });
+
                                             var index = _.findIndex(global.scheduledRequestCrons, function (c) {
                                                 return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
                                             });

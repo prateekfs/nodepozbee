@@ -341,6 +341,28 @@
             });
     }
 
+    photographerOperationsManager.checkIfPhotographerHasOngoingScheduledRequest = function(photographerId, next){
+        var date = new Date();
+        database.ScheduledRequest.findOne({
+            photographerId: photographerId,
+            sessionDate : { $lt : date },
+            isAnswered : true,
+            accepted : true,
+            cancelled : false,
+            shootingFinished : false
+        }).populate("userId").exec(function(err,result){
+            if(err){
+                next(err);
+            } else{
+                if(result){
+                    next(null, operationResult.createSuccesResult(obj));
+                }else{
+                    next(null, operationResult.createSuccesResult());
+                }
+            }
+        });
+    }
+
     photographerOperationsManager.updatePhotographersActiveInstantRequest = function(photographerId, locationData, next){
         database.InstantRequest.findOne({
             "photographerRequests.isTaken" : true,
@@ -486,82 +508,161 @@
         });
     }
 
-    photographerOperationsManager.confirmArrivalOfPhotographer = function(instantRequestId, next){
-        database.InstantRequest.findOneAndUpdate(
-            {
-                _id : instantRequestId
-            }, {
-                $set : {
-                    arrived : true,
-                    arrivedDate : new Date()
-                }
-            }, {
-                new: true
-            }).exec(function(err,result){
-                if(err){
-                    next(err);
-                }else{
-                    var obj = {
-                        arrived : result.arrived,
-                        arrivedDate : result.arrivedDate,
-                        userId : result.userId
-                    };
+    photographerOperationsManager.confirmArrivalOfPhotographer = function(instantRequestId, scheduledRequestId, next) {
+        if (instantRequestId) {
+            database.InstantRequest.findOneAndUpdate(
+                {
+                    _id: instantRequestId
+                }, {
+                    $set: {
+                        arrived: true,
+                        arrivedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            arrived: result.arrived,
+                            arrivedDate: result.arrivedDate,
+                            userId: result.userId
+                        };
 
-                    next(null, operationResult.createSuccesResult(obj));
-                }
-            })
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }else if(scheduledRequestId){
+            database.ScheduledRequest.findOneAndUpdate(
+                {
+                    _id: scheduledRequestId
+                }, {
+                    $set: {
+                        arrived: true,
+                        arrivedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            arrived: result.arrived,
+                            arrivedDate: result.arrivedDate,
+                            userId: result.userId
+                        };
+
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }
     }
 
-    photographerOperationsManager.startPhotoShooting = function(instantRequestId, next){
-        database.InstantRequest.findOneAndUpdate(
-            {
-                _id : instantRequestId
-            }, {
-                $set : {
-                    shootingStarted : true,
-                    shootingStartedDate : new Date()
-                }
-            }, {
-                new: true
-            }).exec(function(err,result){
-                if(err){
-                    next(err);
-                }else{
-                    var obj = {
-                        shootingStarted : result.shootingStarted,
-                        shootingStartedDate : result.shootingStartedDate,
-                        userId : result.userId
-                    };
+    photographerOperationsManager.startPhotoShooting = function(instantRequestId, scheduledRequestId, next){
+        if(instantRequestId) {
+            database.InstantRequest.findOneAndUpdate(
+                {
+                    _id: instantRequestId
+                }, {
+                    $set: {
+                        shootingStarted: true,
+                        shootingStartedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            shootingStarted: result.shootingStarted,
+                            shootingStartedDate: result.shootingStartedDate,
+                            userId: result.userId
+                        };
 
-                    next(null, operationResult.createSuccesResult(obj));
-                }
-            })
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }
+        else if (scheduledRequestId){
+            database.ScheduledRequest.findOneAndUpdate(
+                {
+                    _id: scheduledRequestId
+                }, {
+                    $set: {
+                        shootingStarted: true,
+                        shootingStartedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            shootingStarted: result.shootingStarted,
+                            shootingStartedDate: result.shootingStartedDate,
+                            userId: result.userId
+                        };
+
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }
     }
 
-    photographerOperationsManager.finishPhotoShooting = function(instantRequestId, next){
-        database.InstantRequest.findOneAndUpdate(
-            {
-                _id : instantRequestId
-            }, {
-                $set : {
-                    finished : true,
-                    finishedDate : new Date()
-                }
-            }, {
-                new: true
-            }).exec(function(err,result){
-                if(err){
-                    next(err);
-                }else{
-                    var obj = {
-                        finished : result.finished,
-                        finishedDate : result.finishedDate,
-                        userId : result.userId
-                    };
+    photographerOperationsManager.finishPhotoShooting = function(instantRequestId, scheduledRequestId, next){
+        if(instantRequestId) {
+            database.InstantRequest.findOneAndUpdate(
+                {
+                    _id: instantRequestId
+                }, {
+                    $set: {
+                        finished: true,
+                        finishedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            finished: result.finished,
+                            finishedDate: result.finishedDate,
+                            userId: result.userId
+                        };
 
-                    next(null, operationResult.createSuccesResult(obj));
-                }
-            })
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }else if(scheduledRequestId){
+            database.ScheduledRequest.findOneAndUpdate(
+                {
+                    _id: scheduledRequestId
+                }, {
+                    $set: {
+                        shootingFinished: true,
+                        shootingFinishedDate: new Date()
+                    }
+                }, {
+                    new: true
+                }).exec(function (err, result) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var obj = {
+                            shootingFinished: result.finished,
+                            shootingFinishedDate: result.finishedDate,
+                            userId: result.userId
+                        };
+
+                        next(null, operationResult.createSuccesResult(obj));
+                    }
+                })
+        }
     }
 
     photographerOperationsManager.uploadInitialPhotosOfInstantRequest = function(instantRequestId, photos, next){

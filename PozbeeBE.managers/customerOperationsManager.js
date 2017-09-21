@@ -211,6 +211,7 @@
             _id : scheduledRequestId
         })
             .populate("categoryId")
+            .populate("userId")
             .exec(function(err,scheduledRequestResult){
                 if(err){
                     next(err);
