@@ -121,17 +121,14 @@
                                         database.ScheduledRequest.findOne({_id : scheduledRequest._id}).exec(function(err, res){
                                             if(err || !res){
                                             }else{
-                                                if(!res.isAnswered){
-                                                    res.expired = true;
-                                                    res.save(function(err,saveResult){
-                                                        if(err || !saveResult){ }
-                                                        else{
-                                                            customerScheduledController.iosNotification.sendNotification(photographerUserId, "A scheduled photoshoot request has expired");
-                                                            customerScheduledController.iosNotification.sendNotification(userId, "Your photoshoot request has been rejected");
-                                                        }
-                                                    })
-
-                                                }
+                                                res.expired = true;
+                                                res.save(function(err,saveResult){
+                                                    if(err || !saveResult){ }
+                                                    else{
+                                                        customerScheduledController.iosNotification.sendNotification(photographerUserId, "A scheduled photoshoot request has expired");
+                                                        customerScheduledController.iosNotification.sendNotification(userId, "Your photoshoot request has been rejected");
+                                                    }
+                                                })
                                             }
                                         });
                                     }
@@ -153,7 +150,30 @@
                             });
 
                             var job4 = new CronJob(scheduledRequest.sessionDate, function(){
-                                
+                                database.ScheduledRequest.findOne({_id : scheduledRequest._id}).exec(function(err,scheduledRequestResult){
+                                    var obj = scheduledRequestResult.toObject();
+                                    customerOperations.gatherScheduledRequestInformationForCustomer(scheduledRequest._id, function(err,result){
+                                        if(!err){
+                                            obj.foundPhotographerInformation = result
+                                            customerScheduledController.io.of("customer").to(userId).emit("scheduledRequestStarted", obj);
+                                            var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                                return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
+                                            });
+                                            if (index != -1) {
+                                                global.scheduledRequestCrons.splice(index, 1);
+                                            }
+                                        }
+                                    })
+                                })
+
+
+                            });
+                            job4.start();
+
+                            global.scheduledRequestCrons.push({
+                                scheduleId : scheduledRequest._id.toString(),
+                                sessionTime : true,
+                                cronJob : job4
                             });
 
                         });
@@ -178,7 +198,7 @@
                             var dayBeforeSession = new Date(scheduledRequest.sessionDate.getTime() - 24 * 60 * 60 * 1000);
                             var hourBeforeSession = new Date(scheduledRequest.sessionDate.getTime() - 60 * 60 * 1000);
                             var now = new Date();
-
+                            var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() +  60 * 1000 );
                             var CronJob = require('cron').CronJob;
 
                             if (dayBeforeSession > now){
@@ -226,7 +246,71 @@
                                     cronJob: job2
                                 });
                             }
+                            if (!scheduledRequest.isAnswered) {
+                                var job3 = new CronJob(remainingResponseTime, function () {
+                                    photographerOperations.answerScheduledRequest(scheduledRequest._id, false, function (err, result) {
+                                        if (err) {
+                                        }
+                                        else {
+                                            database.ScheduledRequest.findOne({_id: scheduledRequest._id}).exec(function (err, res) {
+                                                if (err || !res) {
+                                                } else {
+                                                    res.expired = true;
+                                                    res.save(function (err, saveResult) {
+                                                        if (err || !saveResult) {
+                                                        }
+                                                        else {
+                                                            customerScheduledController.iosNotification.sendNotification(photographerUserId, "A scheduled photoshoot request has expired");
+                                                            customerScheduledController.iosNotification.sendNotification(scheduledRequest.userId, "Your photoshoot request has been rejected");
+                                                        }
+                                                    })
+                                                }
+                                            });
+                                        }
+                                    })
 
+                                    this.stop();
+                                    var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                        return c.scheduleId == scheduledRequest._id.toString() && c.dayLater === true;
+                                    });
+                                    if (index != -1) {
+                                        global.scheduledRequestCrons.splice(index, 1);
+                                    }
+                                });
+                                job3.start();
+                                global.scheduledRequestCrons.push({
+                                    scheduleId: scheduledRequest._id.toString(),
+                                    dayLater: true,
+                                    cronJob: job3
+                                });
+                            }
+
+                            var job4 = new CronJob(scheduledRequest.sessionDate, function(){
+                                database.ScheduledRequest.findOne({_id : scheduledRequest._id}).exec(function(err,scheduledRequestResult){
+                                    var obj = scheduledRequestResult.toObject();
+                                    customerOperations.gatherScheduledRequestInformationForCustomer(scheduledRequest._id, function(err,result){
+                                        if(!err){
+                                            obj.foundPhotographerInformation = result
+                                            customerScheduledController.io.of("customer").to(scheduledRequest.userId.toString()).emit("scheduledRequestStarted", obj);
+                                            var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                                return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
+                                            });
+                                            if (index != -1) {
+                                                global.scheduledRequestCrons.splice(index, 1);
+                                            }
+                                        }
+                                    })
+                                })
+
+
+                            });
+                            job4.start();
+
+                            global.scheduledRequestCrons.push({
+                                scheduleId : scheduledRequest._id.toString(),
+                                sessionTime : true,
+                                cronJob : job4
+                            });
                             cb();
                         }
                     })

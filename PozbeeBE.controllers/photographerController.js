@@ -88,6 +88,11 @@
                             photographerController.io.of("customer").to(instantRequestResult.userId.toString()).emit("instantRequestPhotographerLocationChanged", data);
                         }
                     });
+                    photographerOperationsManager.updatePhotographersActiveScheduledRequest(photographerId, res.body, function(err, scheduledRequestResult){
+                        if (!err && scheduledRequestResult){
+                            photographerController.io.of("customer").to(scheduledRequestResult.userId.toString()).emit("scheduledRequestPhotographerLocationChanged", data)
+                        }
+                    })
                     res.status(200).send(result);
                 }
             });

@@ -28,6 +28,7 @@
         customerController.io = io;
         customerController.applyIOToManagers(io);
         customerScheduledController.applyIOToManagers(io);
+        customerScheduledController.io = io;
         photographerController.io = io;
     }
 })(module.exports);

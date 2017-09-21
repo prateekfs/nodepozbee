@@ -58,17 +58,6 @@
             });
         });
 
-        router.get("/checkIfInstantRequestOperationFinished/:instantRequestId", passport.authenticate("bearer",{session : false}), function(req,res,next){
-            var instantRequestId = req.params.instantRequestId;
-            customerOperations.checkIfInstantRequestOperationFinished(instantRequestId, function(err,result){
-                if(err){
-                    res.status(444).send(err);
-                } else{
-                    res.status(200).send(result);
-                }
-            });
-        });
-
         router.get("/checkIfUserHasUnFinishedInstantRequest", passport.authenticate("bearer",{session : false}), function(req,res,next){
             var userId = req.user._id;
             customerOperations.checkIfUserHasUnfinishedInstantRequest(userId, function(err,result){
@@ -78,7 +67,18 @@
                     res.status(200).send(result);
                 }
             })
-        })
+        });
+
+        router.get("/checkIfUserHasOngoingScheduledRequest", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            customerOperations.checkIfUserHasOngoingScheduledRequest(userId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        });
 
         router.get("/startCheckingPhotographers/:instantRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
             var instantRequestId = mongoose.Types.ObjectId(req.params.instantRequestId);
@@ -184,6 +184,16 @@
 
         });
 
+        router.get("/getIncomingScheduledRequests", passport.authenticate("bearer",{session : false}), function(req,res,next){
+            var userId = req.user._id;
+            scheduledCustomerOperations.getIncomingScheduledRequests(userId, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                } else{
+                    res.status(200).send(result);
+                }
+            })
+        });
 
 
         return router;

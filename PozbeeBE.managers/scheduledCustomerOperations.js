@@ -9,6 +9,16 @@
 
 
 
+    scheduledCustomerOperations.getIncomingScheduledRequests = function(userId, next){
+        var date = new Date();
+        database.ScheduledRequest.find({userId : userId, accepted : true, sessionDate : { $gt : date }}, { sessionDate : 1 }).exec(function(err,result){
+            if(err){
+                next(err);
+            }else{
+                next(null, operationResult.createSuccesResult(result));
+            }
+        })
+    };
 
     scheduledCustomerOperations.scheduleSession = function(userId, photographerId, date, hours, unavailabilityFormattedDates, hoursFromGMT, location, categoryId, next){
         database.Photographer.findOne({_id : photographerId}).exec(function(err,photographer){
@@ -63,7 +73,7 @@
                                         requestDate : new Date(),
                                         userId : userId,
                                         categoryId : categoryId,
-                                        sessionDate : date,
+                                        sessionDate : new Date(new Date().getTime() + 2 * 60 * 1000),
                                         location : {
                                             type : "Point",
                                             coordinates : location
@@ -75,8 +85,11 @@
                                        if(err){
                                            next(err);
                                        } else{
-                                           next(null, operationResult.createSuccesResult(),scheduledRequestResult);
+                                           scheduledRequestResult.populate("photographerId", function(err){
+                                               next(null, operationResult.createSuccesResult(),scheduledRequestResult);
+                                           })
                                        }
+
                                     });
                                 }
                             });
@@ -88,7 +101,7 @@
 
             }
         })
-    }
+    };
 
     scheduledCustomerOperations.getPhotographersToSchedule = function(date, hours, categoryId, location, next){
         var d = new Date(date);

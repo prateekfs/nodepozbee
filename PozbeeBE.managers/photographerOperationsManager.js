@@ -361,7 +361,6 @@
                 }
                 var pRequest = _.find(instantRequestResult.photographerRequests, function(pr){ return pr.photographerId.toString() === photographerId.toString() });
                 if (pRequest){
-
                     pRequest.currentLocation = location;
                     instantRequestResult.save(function(err,saveResult){
                         if(err){
@@ -372,6 +371,27 @@
                     })
                 }
 
+            }
+        });
+    }
+
+    photographerOperationsManager.updatePhotographersActiveScheduledRequest = function(photographerId, locationData, next){
+        database.ScheduledRequest.findOne({
+            photographerId : photographerId,
+            accepted : true,
+            sessionDate : { $lt : new Date() },
+            $or : [{ shootingFinished : false} ,{ shootingFinished : null }]
+        }).exec(function(err,scheduledRequestResult){
+            if(err){
+                next(err);
+            }else{
+                if(!scheduledRequestResult){
+                    next(null,null);
+                    return;
+                }
+                else{
+                    next(null, scheduledRequestResult);
+                }
             }
         });
     }
@@ -1172,6 +1192,13 @@
                    if (response === true){
                        scheduledRequest.isAnswered = true;
                        scheduledRequest.accepted = true;
+                       var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                           return c.scheduleId == requestId.toString() && c.dayLater === true
+                       });
+                       if (index != -1){
+                           global.scheduledRequestCrons[index].cronJob.stop();
+                           global.scheduledRequestCrons.splice(index, 1);
+                       }
                    }
                    cb(null);
                }, function(cb){
@@ -1205,6 +1232,7 @@
                                 return c.scheduleId == requestId.toString()
                             });
                             if (index != -1){
+                                global.scheduledRequestCrons[index].cronJob.stop();
                                 global.scheduledRequestCrons.splice(index, 1);
                             }
                         }

@@ -114,7 +114,8 @@
         if(!this.userChoosedDate) { this.userChoosedDate = null; }
         if(!this.editedPhotosAdded) { this.editedPhotosAdded = false; }
         if(!this.editedPhotosAddedDate) { this.editedPhotosAddedDate = null; }
-
+        if(!this.shootingStarted) { this.shootingStarted = false }
+        if(!this.shootingFinished) { this.shootingFinished = false }
         this.updated = new Date();
         next();
     });

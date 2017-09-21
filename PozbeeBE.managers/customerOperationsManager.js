@@ -44,6 +44,20 @@
                 })
             },
             function(cb){
+                var time = new Date(new Date().getTime() + 4 * 60 * 60 * 1000);
+                database.ScheduledRequest.find({ $or : [ { isAnswered : true, accepted : true }, { isAnswered : false } ], sessionDate : { $lt : time } }).exec(function(err,result){
+                    if(err || !result){
+                        cb();
+                    }else{
+                        if(result.length == 0){
+                            cb();
+                        }else{
+                            cb(operationResult.createErrorResult("You have scheduled request soon"));
+                        }
+                    }
+                })
+            },
+            function(cb){
                 database.InstantRequest.findOne({userId : userId, finished : false}).exec(function(err,instantRequest) {
                     if (err) {
                         next(err);
@@ -192,6 +206,56 @@
         });
     }
 
+    customerOperations.gatherScheduledRequestInformationForCustomer = function(scheduledRequestId, next){
+        database.ScheduledRequest.findOne({
+            _id : scheduledRequestId
+        })
+            .populate("categoryId")
+            .exec(function(err,scheduledRequestResult){
+                if(err){
+                    next(err);
+                } else{
+                    var photographerId = scheduledRequestResult.photographerId;
+
+                    database.User.findOne({
+                        photographer : photographerId
+                    })
+                        .populate("photographerApplications")
+                        .populate("photographer").exec(function(err,userResult){
+                            if(err){
+                                next(err);
+                            }else{
+                                if (!userResult){
+                                    next(null, null);
+                                }else{
+                                    var photographerName = userResult.name;
+                                    var photographerNumber = userResult.phoneNumber;
+                                    var photographerPhoto = userResult.profilePicture;
+                                    var category = scheduledRequestResult.categoryId.name
+                                    var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
+                                    var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
+                                    var cameraModel = appliedApplication.cameraModel;
+                                    var scheduledRequestIdStr = scheduledRequestId.toString();
+                                    var photographerLocation = userResult.photographer.location.coordinates;
+                                    var obj = scheduledRequestResult.toObject();
+
+                                    next(null, {
+                                        "photographerName" : photographerName,
+                                        "photographerNumber" : photographerNumber,
+                                        "photographerPhoto" : photographerPhoto,
+                                        "category" : category,
+                                        "cameraPhoto" : cameraPhoto,
+                                        "scheduledRequestIdStr" : scheduledRequestIdStr,
+                                        "photographerLocation" : photographerLocation,
+                                        "cameraModel" : cameraModel
+                                    });
+                                }
+                            }
+                        })
+                }
+            });
+    }
+
     customerOperations.gatherInstantRequestInformationForCustomer = function(instantRequestId, next){
         database.InstantRequest.findOne({
             _id : instantRequestId
@@ -272,6 +336,33 @@
            }
         });
     }
+
+    customerOperations.checkIfUserHasOngoingScheduledRequest = function(userId, next){
+        var date = new Date();
+        database.ScheduledRequest.findOne({
+            userId: userId,
+            sessionDate : { $lt : date },
+            isAnswered : true,
+            accepted : true,
+            cancelled : false,
+            shootingFinished : false
+        }).exec(function(err,result){
+            if(err){
+                next(err);
+            } else{
+                if(result){
+                    customerOperations.gatherScheduledRequestInformationForCustomer(result._id , function(err, gatheredInfo){
+                        var obj = result.toObject();
+                        obj.foundPhotographerInformation = gatheredInfo
+                        next(null, operationResult.createSuccesResult(obj));
+                    })
+                }else{
+                    next(null, operationResult.createSuccesResult());
+                }
+            }
+        });
+    }
+
 
     customerOperations.getInstantRequestById = function(instantRequestId, next){
         database.InstantRequest.findOne({_id : instantRequestId}).populate("userId").populate("categoryId").exec(function(err,result){
