@@ -53,7 +53,7 @@
 
             scheduledCustomerOperations.scheduleSession(userId, photographerId,scheduleDate,hours, dates,hoursFromGMT, location, categoryId, function(err, result, scheduledRequest){
                 if(err){
-                    res.status(444).send(err);
+                    res.status(500).send(err);
                 }else{
                     if (result.isSuccess) {
                         photographerOperations.getPhotographerUserId(photographerId, function (err, photographerUserId) {
