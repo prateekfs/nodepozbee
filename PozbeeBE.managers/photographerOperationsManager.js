@@ -1399,7 +1399,7 @@
                             if(err){
                                 next(err);
                             }else{
-                                next(null, operationResult.createSuccesResult());
+                                next(null, operationResult.createSuccesResult(), saveResult);
                             }
                         })
                     }

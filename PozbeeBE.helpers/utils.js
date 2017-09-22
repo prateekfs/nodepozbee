@@ -38,7 +38,9 @@ global.NotificationEnum = Object.freeze(
         "NonEditedPhotosAdded" : 8,
         "PhotographsSelected" : 9,
         "EditedPhotosAdded" : 10,
-        "NewScheduledRequest" : 11
+        "NewScheduledRequest" : 11,
+        "ScheduledRequestAccepted" : 12,
+        "ScheduledRequestRejected" : 13
     })
 
 global.getLocalTimeByLocation = function(location ,date){

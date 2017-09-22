@@ -375,10 +375,12 @@
         router.post("/answerScheduledRequest", passport.authenticate("bearer", { session : false }), function(req, res, next){
             var scheduledRequestId = mongoose.Types.ObjectId(req.body.requestId);
             var response = req.body.response;
-            photographerOperationsManager.answerScheduledRequest(scheduledRequestId, response, function(err,result){
+            photographerOperationsManager.answerScheduledRequest(scheduledRequestId, response, function(err, result, scheduledRequest){
                 if(err){
                     res.status(444).send(err);
                 } else{
+                    var d = global.getLocalTimeByLocation(scheduledRequest.location.coordinates, scheduledRequest.sessionDate);
+                    photographerController.iosNotification.sendNotification(scheduledRequest.userId,"Your request for " + d.dateStr  + " has been " + (response === true ? "accepted." : "rejected."), {type : (response === true ? global.NotificationEnum.ScheduledRequestAccepted : global.NotificationEnum.ScheduledRequestRejected)});
                     res.status(200).send(result);
                 }
             })

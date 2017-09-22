@@ -85,7 +85,7 @@
                                        if(err){
                                            next(err);
                                        } else{
-                                           scheduledRequestResult.populate("photographerId", function(err){
+                                           scheduledRequestResult.populate("userId").populate("categoryId").populate("photographerId", function(err){
                                                next(null, operationResult.createSuccesResult(),scheduledRequestResult);
                                            })
                                        }

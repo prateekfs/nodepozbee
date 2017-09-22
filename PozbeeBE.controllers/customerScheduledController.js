@@ -56,6 +56,7 @@
                     res.status(500).send(err);
                 }else{
                     if (result.isSuccess) {
+
                         photographerOperations.getPhotographerUserId(photographerId, function (err, photographerUserId) {
                             if (err) {
 
@@ -65,122 +66,126 @@
                                     type: global.NotificationEnum.NewScheduledRequest,
                                     id: scheduledRequest._id.toString()
                                 });
-                            }
-                            var now = new Date();
-                            var dayBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 24 * 60 * 60 * 1000);
-                            var hourBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 60 * 60 * 1000);
-                            var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() +  60 * 1000 );
-                            var CronJob = require('cron').CronJob;
-                            if (now < dayBeforeJob) {
-                                var job = new CronJob(dayBeforeJob, function () {
-                                        var d = global.getLocalTimeByLocation(scheduledRequest.location.coordinates, scheduledRequest.sessionDate);
-                                        customerScheduledController.iosNotification.sendNotification(photographerUserId, "You have a scheduled session request tomorrow!");
-                                        customerScheduledController.iosNotification.sendNotification(userId, "You have a scheduled session request tomorrow!");
-                                        this.stop();
-                                        var index = _.findIndex(global.scheduledRequestCrons, function (c) {
-                                            return c.scheduleId == scheduledRequest._id.toString() && c.dayBefore === true;
-                                        });
-                                        if (index != -1) {
-                                            global.scheduledRequestCrons.splice(index, 1);
-                                        }
-                                    }
-                                );
-                                job.start();
-                                global.scheduledRequestCrons.push({
-                                    scheduleId: scheduledRequest._id.toString(),
-                                    dayBefore : true,
-                                    cronJob: job
-                                });
-                            }
-                            if (now < hourBeforeJob) {
-                                var job2 = new CronJob(hourBeforeJob, function () {
-                                        var d = global.getLocalTimeByLocation(scheduledRequest.location.coordinates, scheduledRequest.sessionDate);
-                                        customerScheduledController.iosNotification.sendNotification(photographerUserId, "You have a scheduled session request in an hour!");
-                                        customerScheduledController.iosNotification.sendNotification(userId, "You have a scheduled session request in an hour!");
-                                        this.stop();
-                                        var index = _.findIndex(global.scheduledRequestCrons, function (c) {
-                                            return c.scheduleId == scheduledRequest._id.toString() && c.hourBefore === true;
-                                        });
-                                        if (index != -1) {
-                                            global.scheduledRequestCrons.splice(index, 1);
-                                        }
-                                    }
-                                );
-                                job2.start();
-                                global.scheduledRequestCrons.push({
-                                    scheduleId: scheduledRequest._id.toString(),
-                                    hourBefore : true,
-                                    cronJob: job2
-                                });
-                            }
+                                customerScheduledController.io.of("photographer").to(photographerUserId.toString()).emit("newScheduledRequest", scheduledRequest.toObject());
 
-                            var job3 = new CronJob(remainingResponseTime, function(){
-                                photographerOperations.answerScheduledRequest(scheduledRequest._id, false, function(err, result){
-                                    if (err){ }
-                                    else{
-                                        database.ScheduledRequest.findOne({_id : scheduledRequest._id}).exec(function(err, res){
-                                            if(err || !res){
-                                            }else{
-                                                res.expired = true;
-                                                res.save(function(err,saveResult){
-                                                    if(err || !saveResult){ }
-                                                    else{
-                                                        customerScheduledController.iosNotification.sendNotification(photographerUserId, "A scheduled photoshoot request has expired");
-                                                        customerScheduledController.iosNotification.sendNotification(userId, "Your photoshoot request has been rejected");
-                                                    }
-                                                })
-                                            }
-                                        });
-                                    }
-                                })
 
-                                this.stop();
-                                var index = _.findIndex(global.scheduledRequestCrons, function (c) {
-                                    return c.scheduleId == scheduledRequest._id.toString() && c.dayLater === true;
-                                });
-                                if (index != -1) {
-                                    global.scheduledRequestCrons.splice(index, 1);
-                                }
-                            });
-                            job3.start();
-                            global.scheduledRequestCrons.push({
-                                scheduleId : scheduledRequest._id.toString(),
-                                dayLater : true,
-                                cronJob : job3
-                            });
-
-                            var job4 = new CronJob(scheduledRequest.sessionDate, function(){
-                                database.ScheduledRequest.findOne({_id : scheduledRequest._id}).exec(function(err,scheduledRequestResult){
-                                    var obj = scheduledRequestResult.toObject();
-                                    customerOperations.gatherScheduledRequestInformationForCustomer(scheduledRequest._id, function(err,result){
-                                        if(!err){
-                                            obj.foundPhotographerInformation = result
-                                            customerScheduledController.io.of("customer").to(userId).emit("scheduledRequestStarted", obj);
-                                            photographerOperations.getPhotographerUserId(scheduledRequest.photographerId , function(err, photographerUserId){
-                                                if(!err && photographerUserId){
-                                                    customerScheduledController.io.of("photographer").to(photographerUserId.toString()).emit("scheduledRequestStarted", obj);
-                                                }
-                                            });
+                                var now = new Date();
+                                var dayBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 24 * 60 * 60 * 1000);
+                                var hourBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 60 * 60 * 1000);
+                                var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() + 60 * 1000);
+                                var CronJob = require('cron').CronJob;
+                                if (now < dayBeforeJob) {
+                                    var job = new CronJob(dayBeforeJob, function () {
+                                            var d = global.getLocalTimeByLocation(scheduledRequest.location.coordinates, scheduledRequest.sessionDate);
+                                            customerScheduledController.iosNotification.sendNotification(photographerUserId, "You have a scheduled session request tomorrow!");
+                                            customerScheduledController.iosNotification.sendNotification(userId, "You have a scheduled session request tomorrow!");
+                                            this.stop();
                                             var index = _.findIndex(global.scheduledRequestCrons, function (c) {
-                                                return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
+                                                return c.scheduleId == scheduledRequest._id.toString() && c.dayBefore === true;
                                             });
                                             if (index != -1) {
                                                 global.scheduledRequestCrons.splice(index, 1);
                                             }
                                         }
+                                    );
+                                    job.start();
+                                    global.scheduledRequestCrons.push({
+                                        scheduleId: scheduledRequest._id.toString(),
+                                        dayBefore: true,
+                                        cronJob: job
+                                    });
+                                }
+                                if (now < hourBeforeJob) {
+                                    var job2 = new CronJob(hourBeforeJob, function () {
+                                            var d = global.getLocalTimeByLocation(scheduledRequest.location.coordinates, scheduledRequest.sessionDate);
+                                            customerScheduledController.iosNotification.sendNotification(photographerUserId, "You have a scheduled session request in an hour!");
+                                            customerScheduledController.iosNotification.sendNotification(userId, "You have a scheduled session request in an hour!");
+                                            this.stop();
+                                            var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                                return c.scheduleId == scheduledRequest._id.toString() && c.hourBefore === true;
+                                            });
+                                            if (index != -1) {
+                                                global.scheduledRequestCrons.splice(index, 1);
+                                            }
+                                        }
+                                    );
+                                    job2.start();
+                                    global.scheduledRequestCrons.push({
+                                        scheduleId: scheduledRequest._id.toString(),
+                                        hourBefore: true,
+                                        cronJob: job2
+                                    });
+                                }
+
+                                var job3 = new CronJob(remainingResponseTime, function () {
+                                    photographerOperations.answerScheduledRequest(scheduledRequest._id, false, function (err, result) {
+                                        if (err) {
+                                        }
+                                        else {
+                                            database.ScheduledRequest.findOne({_id: scheduledRequest._id}).exec(function (err, res) {
+                                                if (err || !res) {
+                                                } else {
+                                                    res.expired = true;
+                                                    res.save(function (err, saveResult) {
+                                                        if (err || !saveResult) {
+                                                        }
+                                                        else {
+                                                            customerScheduledController.iosNotification.sendNotification(photographerUserId, "A scheduled photoshoot request has expired");
+                                                            customerScheduledController.iosNotification.sendNotification(userId, "Your photoshoot request has been rejected");
+                                                        }
+                                                    })
+                                                }
+                                            });
+                                        }
                                     })
-                                })
+
+                                    this.stop();
+                                    var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                        return c.scheduleId == scheduledRequest._id.toString() && c.dayLater === true;
+                                    });
+                                    if (index != -1) {
+                                        global.scheduledRequestCrons.splice(index, 1);
+                                    }
+                                });
+                                job3.start();
+                                global.scheduledRequestCrons.push({
+                                    scheduleId: scheduledRequest._id.toString(),
+                                    dayLater: true,
+                                    cronJob: job3
+                                });
+
+                                var job4 = new CronJob(scheduledRequest.sessionDate, function () {
+                                    database.ScheduledRequest.findOne({_id: scheduledRequest._id}).exec(function (err, scheduledRequestResult) {
+                                        var obj = scheduledRequestResult.toObject();
+                                        customerOperations.gatherScheduledRequestInformationForCustomer(scheduledRequest._id, function (err, result) {
+                                            if (!err) {
+                                                obj.foundPhotographerInformation = result
+                                                customerScheduledController.io.of("customer").to(userId).emit("scheduledRequestStarted", obj);
+                                                photographerOperations.getPhotographerUserId(scheduledRequest.photographerId, function (err, photographerUserId) {
+                                                    if (!err && photographerUserId) {
+                                                        customerScheduledController.io.of("photographer").to(photographerUserId.toString()).emit("scheduledRequestStarted", obj);
+                                                    }
+                                                });
+                                                var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                                                    return c.scheduleId == scheduledRequest._id.toString() && c.sessionTime === true;
+                                                });
+                                                if (index != -1) {
+                                                    global.scheduledRequestCrons.splice(index, 1);
+                                                }
+                                            }
+                                        })
+                                    })
 
 
-                            });
-                            job4.start();
+                                });
+                                job4.start();
 
-                            global.scheduledRequestCrons.push({
-                                scheduleId : scheduledRequest._id.toString(),
-                                sessionTime : true,
-                                cronJob : job4
-                            });
-
+                                global.scheduledRequestCrons.push({
+                                    scheduleId: scheduledRequest._id.toString(),
+                                    sessionTime: true,
+                                    cronJob: job4
+                                });
+                            }
                         });
 
                     }
