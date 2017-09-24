@@ -90,7 +90,7 @@
                     });
                     photographerOperationsManager.updatePhotographersActiveScheduledRequest(photographerId, res.body, function(err, scheduledRequestResult){
                         if (!err && scheduledRequestResult){
-                            photographerController.io.of("customer").to(scheduledRequestResult.userId.toString()).emit("scheduledRequestPhotographerLocationChanged", data)
+                            photographerController.io.of("customer").to(scheduledRequestResult.userId.toString()).emit("instantRequestPhotographerLocationChanged", data)
                         }
                     })
                     res.status(200).send(result);

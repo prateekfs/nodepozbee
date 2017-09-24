@@ -355,7 +355,7 @@
                 next(err);
             } else{
                 if(result){
-                    next(null, operationResult.createSuccesResult(obj));
+                    next(null, operationResult.createSuccesResult(result.toObject()));
                 }else{
                     next(null, operationResult.createSuccesResult());
                 }
