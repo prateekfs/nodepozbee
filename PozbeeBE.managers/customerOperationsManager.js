@@ -518,7 +518,7 @@
                    result.cancelled = true;
                    result.finished = true;
                    result.finishedDate = new Date();
-                   var photographerIds = _.map(result.photographerRequests, function(pr){ return pr.photographerId });
+                   var photographerIds = _.map(_.filter(result.photographerRequests, function(pr){ return (pr.askedDate != null) && (pr.askedDate != undefined) && pr.isAnswered == false }), function(pr){ return pr.photographerId });
                    var newPhotographerRequestsArray =  result.photographerRequests.filter(function(pr){
                       return !pr.isAnswered
                    });

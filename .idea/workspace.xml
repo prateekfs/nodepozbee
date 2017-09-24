@@ -57,8 +57,8 @@
       <file leaf-file-name="customerOperationsManager.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33333334">
-              <caret line="510" column="8" selection-start-line="510" selection-start-column="8" selection-end-line="510" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.42465752">
+              <caret line="514" column="32" selection-start-line="514" selection-start-column="32" selection-end-line="514" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -192,8 +192,8 @@
         <option value="$PROJECT_DIR$/PozbeeBE.controllers/photographerController.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.managers/photographerOperationsManager.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.data/collections/scheduledRequest.js" />
-        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
         <option value="$PROJECT_DIR$/PozbeeBE.controllers/customerController.js" />
+        <option value="$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js" />
       </list>
     </option>
   </component>
@@ -908,8 +908,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/PozbeeBE.managers/customerOperationsManager.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="510" column="8" selection-start-line="510" selection-start-column="8" selection-end-line="510" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.42465752">
+          <caret line="514" column="32" selection-start-line="514" selection-start-column="32" selection-end-line="514" selection-end-column="32" />
           <folding />
         </state>
       </provider>
