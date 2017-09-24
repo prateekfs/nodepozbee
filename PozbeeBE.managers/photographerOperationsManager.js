@@ -654,8 +654,8 @@
                         next(err);
                     } else {
                         var obj = {
-                            shootingFinished: result.finished,
-                            shootingFinishedDate: result.finishedDate,
+                            shootingFinished: result.shootingFinished,
+                            shootingFinishedDate: result.shootingFinishedDate,
                             userId: result.userId
                         };
 
