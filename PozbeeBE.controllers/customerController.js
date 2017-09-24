@@ -105,7 +105,7 @@
             }
             var scheduledRequestId = null;
             if (req.query.scheduledRequestId){
-                instantRequestId = mongoose.Types.ObjectId(req.query.scheduledRequestId);
+                scheduledRequestId = mongoose.Types.ObjectId(req.query.scheduledRequestId);
             }
 
             customerOperations.confirmFinishedPhotoShooting(instantRequestId, scheduledRequestId, function(err,result){
@@ -291,7 +291,6 @@
                 customerOperations.gatherInstantRequestInformationForCustomer(instantRequest._id, function(err, gatheredInfo){
                     if(!err && gatheredInfo){
                         customerController.io.of("customer").to(instantRequest.userId._id.toString()).emit("photographerFound", gatheredInfo);
-                        photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the request.", {type : global.NotificationEnum.RequestCancelled});
                     }
                 });
             }

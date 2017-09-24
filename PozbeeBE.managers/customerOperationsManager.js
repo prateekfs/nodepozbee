@@ -45,7 +45,7 @@
             },
             function(cb){
                 var time = new Date(new Date().getTime() + 4 * 60 * 60 * 1000);
-                database.ScheduledRequest.find({ $or : [ { isAnswered : true, accepted : true }, { isAnswered : false } ], sessionDate : { $lt : time } }).exec(function(err,result){
+                database.ScheduledRequest.find({ $or : [ { isAnswered : true, accepted : true }, { isAnswered : false } ], sessionDate : { $gt : time }, userId : userId }).exec(function(err,result){
                     if(err || !result){
                         cb();
                     }else{
