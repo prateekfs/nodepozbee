@@ -99,12 +99,16 @@
             },
             editedPhotosAddedDate : {
                 type : Date
+            },
+            userConfirmed : {
+                type : Boolean
             }
         },{collection : "scheduledRequest"});
     scheduledRequestSchema.pre("validate", function(next){
         if(!this.requestDate){ this.requestDate = new Date(); }
         if(!this.isAnswered) { this.isAnswered = false; }
         if(!this.accepted) { this.accepted = false; }
+        if(!this.userConfirmed) { this.userConfirmed = false; }
         if(!this.willBeDecidedLater) { this.willBeDecidedLater = false; }
         if(!this.cancelled) { this.cancelled = false; }
         if(!this.userConfirmed) { this.userConfirmed = false; }

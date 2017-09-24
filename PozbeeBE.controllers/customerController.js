@@ -98,8 +98,17 @@
         });
 
         router.get("/confirmFinishedPhotoShooting", passport.authenticate("bearer", {session : false}), function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
-            customerOperations.confirmFinishedPhotoShooting(instantRequestId, function(err,result){
+
+            var instantRequestId = null;
+            if (req.query.instantRequestId){
+                instantRequestId = mongoose.Types.ObjectId(req.query.instantRequestId);
+            }
+            var scheduledRequestId = null;
+            if (req.query.scheduledRequestId){
+                instantRequestId = mongoose.Types.ObjectId(req.query.scheduledRequestId);
+            }
+
+            customerOperations.confirmFinishedPhotoShooting(instantRequestId, scheduledRequestId, function(err,result){
                 if(err){
                     res.status(444).send(err);
                 }else{

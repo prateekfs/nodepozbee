@@ -346,7 +346,7 @@
             isAnswered : true,
             accepted : true,
             cancelled : false,
-            shootingFinished : false
+            userConfirmed : false
         }).exec(function(err,result){
             if(err){
                 next(err);
@@ -475,21 +475,36 @@
         })
     }
 
-    customerOperations.confirmFinishedPhotoShooting = function(instantRequestId, next){
-        database.InstantRequest.update({
-            _id : instantRequestId
-        },{
-            $set :
-            {
-                userConfirmed : true
-            }
-        }).exec(function(err,result){
-            if(err){
-                next(err);
-            }else{
-                next(null, operationResult.createSuccesResult());
-            }
-        })
+    customerOperations.confirmFinishedPhotoShooting = function(instantRequestId, scheduledRequestId, next){
+        if(instantRequestId) {
+            database.InstantRequest.update({
+                _id: instantRequestId
+            }, {
+                $set: {
+                    userConfirmed: true
+                }
+            }).exec(function (err, result) {
+                if (err) {
+                    next(err);
+                } else {
+                    next(null, operationResult.createSuccesResult());
+                }
+            })
+        }else if (scheduledRequestId){
+            database.ScheduledRequest.update({
+                _id: scheduledRequestId
+            }, {
+                $set: {
+                    userConfirmed: true
+                }
+            }).exec(function (err, result) {
+                if (err) {
+                    next(err);
+                } else {
+                    next(null, operationResult.createSuccesResult());
+                }
+            })
+        }
     }
 
     customerOperations.cancelInstantRequest = function(instantRequestId, next){
