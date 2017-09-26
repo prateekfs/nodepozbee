@@ -523,7 +523,7 @@
                       return !pr.isAnswered
                    });
 
-                   result.photographerRequests = newPhotographerRequestsArray
+                   //result.photographerRequests = newPhotographerRequestsArray
                    result.save(function(err,saveResult){
                        if(err){
                            next(err);

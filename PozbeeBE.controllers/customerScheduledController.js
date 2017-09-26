@@ -23,11 +23,12 @@
         setRemindersForScheduledRequests();
 
         router.get("/getPhotographers", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var userId = req.user._id;
             var date = req.query.date;
             var categoryId = mongoose.Types.ObjectId(req.query.categoryId);
             var location = _.map(req.query.location, function(a) { return Number(a) });
             var hours = Number(req.query.hours);
-            scheduledCustomerOperations.getPhotographersToSchedule(date, hours, categoryId, location, function(err, result){
+            scheduledCustomerOperations.getPhotographersToSchedule(userId, date, hours, categoryId, location, function(err, result){
                 if(err){
                     res.status(444).send(err);
                 }else{

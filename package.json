@@ -12,6 +12,7 @@
     "cors": "^2.8.1",
     "cron": "^1.2.1",
     "crypto": "0.0.3",
+    "daterange": "^0.3.0",
     "debug": "~2.6.0",
     "express": "~4.14.1",
     "image-watermark": "0.0.7",

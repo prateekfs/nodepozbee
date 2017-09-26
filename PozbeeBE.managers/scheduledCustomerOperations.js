@@ -6,7 +6,7 @@
     var async = require("async");
     var moment = require("moment");
     var cron = require("cron");
-
+    var dateRange = require("daterange");
 
 
     scheduledCustomerOperations.getIncomingScheduledRequests = function(userId, next){
@@ -73,7 +73,7 @@
                                         requestDate : new Date(),
                                         userId : userId,
                                         categoryId : categoryId,
-                                        sessionDate : new Date(new Date().getTime() + 2 * 60 * 1000),
+                                        sessionDate : new Date(date.getTime() - hoursFromGMT * 60 * 60 * 1000),
                                         location : {
                                             type : "Point",
                                             coordinates : location
@@ -103,11 +103,43 @@
         })
     };
 
-    scheduledCustomerOperations.getPhotographersToSchedule = function(date, hours, categoryId, location, next){
+    scheduledCustomerOperations.getPhotographersToSchedule = function(userId, date, hours, categoryId, location, next){
         var d = new Date(date);
         d.setUTCHours(0,0,0);
         var requestLocalDate = global.getLocalTimeByLocation(location, new Date(date)).date;
         async.waterfall ([
+            function(cb){ 
+                var now = Date();
+                database.ScheduledRequest.find(
+                    {
+                        userId : userId,
+                        sessionDate : { $gt : now },
+                        $or :
+                            [
+                                { isAnswered : false },
+                                { isAnswered : true, accepted : true }
+                            ] 
+                    }).exec(function(err, usersScheduledRequests){
+                    if(err || usersScheduledRequests.length == 0){
+                        cb();
+                    }else{
+                        var sessionDate = new Date(date);
+                        var sessionEndDate = new Date(sessionDate.getTime() + hours * 60 * 60 * 1000);
+                        var sessionRange = dateRange.create(sessionDate, sessionEndDate);
+                        for (i = 0; i < usersScheduledRequests.length; i++){
+                            var scheduledRequest = usersScheduledRequests[i];
+                            var startDate = scheduledRequest.sessionDate;
+                            var endDate = new Date(scheduledRequest.sessionDate.getTime() + scheduledRequest.hours * 60 * 60 * 1000);
+                            var scheduledRequestRange = dateRange.create(startDate, endDate);
+                            if (dateRange.overlaps(sessionRange, scheduledRequestRange)){
+                                cb(operationResult.createErrorResult("You have a scheduled request on the time you choosed"));
+                                break;
+                            }
+                        }
+                        cb();
+                    }
+                })
+            },
             function(cb){
                 database.Photographer.find({
                     permanentLocation : {
