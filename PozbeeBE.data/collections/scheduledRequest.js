@@ -82,6 +82,9 @@
             userConfirmed : {
                 type : Boolean
             },
+            rejectionDate : {
+                type : Date
+            },
             nonEditedPhotosAdded :{
                 type : Boolean
             },

@@ -447,6 +447,121 @@
         });
     }
 
+    photographerOperationsManager.cancelScheduledRequest = function(scheduledRequestId, next){
+        database.ScheduledRequest.findOneAndUpdate(
+            {
+                _id : scheduledRequestId
+            },
+            {
+                $set :
+                {
+                    cancelled : true,
+                    cancelledByPhotographer : true,
+                    shootingFinished : true,
+                    shootingFinishedDate : new Date()
+                }
+            },{
+                new : true
+            }).exec(function(err, result){
+            if(err){
+                next(err);
+            } else{
+                var jobs = _.filter(global.scheduledRequestCrons, function(src){
+                    return src.scheduleId == scheduledRequestId.toString();
+                });
+                _.each(jobs, function(src){
+                    src.cronJob.stop();
+                });
+
+                for(i = 0; i < jobs.length; i ++ ){
+                    var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                        return c.scheduleId == scheduledRequestId.toString()
+                    });
+                    if (index != -1){
+                        global.scheduledRequestCrons.splice(index, 1);
+                    }
+                }
+
+                var list = []
+                for (i = 0; i < result.hours; i++){
+                    var d = new Date(result.sessionDate.getTime() + i*60*60*1000);
+                    var x = new Date(JSON.parse(JSON.stringify(d)));
+                    x.setUTCHours(0);
+                    var index = _.findIndex(list, function(d){
+                        return d.day.toDateString() == x.toDateString()
+                    });
+                    if (index == -1){
+                        list.push({ day : x, hours : [d.getUTCHours()] });
+                    }else{
+                        list[index].hours.push(d.getUTCHours())
+                    }
+                }
+                if(list.length > 0) {
+                    async.each(list, function (d, eachCb) {
+                        var day = d.day;
+                        var hours = d.hours;
+                        database.PhotographerUnavailability.findOne({
+                            photographerId: result.photographerId,
+                            day: day
+                        }).exec(function (err, unavailability) {
+                            if (err || !unavailability) {
+                                eachCb(err);
+                            } else {
+                                for (i = 0; i < hours.length; i++) {
+                                    var h = hours[i];
+                                    var index = unavailability.hours.findIndex(function (hour) {
+                                        return hour == h;
+                                    });
+                                    if (index != -1) {
+                                        unavailability.hours.splice(index, 1);
+                                    }
+                                }
+                                if (unavailability.hours.length == 0) {
+                                    unavailability.remove(function (err, removeRes) {
+                                        if (err) {
+                                            eachCb(err);
+                                        } else {
+                                            eachCb();
+                                        }
+                                    })
+                                } else {
+                                    unavailability.save(function (err, updateResult) {
+                                        if (err) {
+                                            eachCb(err);
+                                        } else {
+                                            eachCb();
+                                        }
+                                    });
+                                }
+
+                            }
+                        });
+                    }, function (err) {
+                        if (err) {
+                            next(err);
+                        } else {
+                            photographerOperationsManager.getPhotographerUserId(result.photographerId, function (err, userId) {
+                                if (err) {
+                                    next(null, operationResult.createSuccesResult());
+                                } else {
+                                    next(null, operationResult.createSuccesResult(), userId);
+                                }
+                            });
+                        }
+                    });
+                }else {
+                    photographerOperationsManager.getPhotographerUserId(result.photographerId, function (err, userId) {
+                        if (err) {
+                            next(null, operationResult.createSuccesResult());
+                        } else {
+                            next(null, operationResult.createSuccesResult(), userId);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     photographerOperationsManager.respondToInstantPhotographerRequest = function(accepted, photographerId, instantRequestId, next){
         database.Photographer.findOne({
             _id : photographerId
@@ -763,6 +878,125 @@
                             }
                         });
 
+                }
+            });
+    }
+
+    photographerOperationsManager.getScheduledRequestsHistory = function(photographerId, skipCount, limitCount, include, exclude, next){
+        var matchQuery;
+        if (exclude) {
+            matchQuery = {
+                "photographerId" : photographerId,
+                "_id" : {
+                    $nin : [exclude]
+                }
+            }
+        }else{
+            matchQuery = {
+                "photographerId" : photographerId
+            }
+        }
+
+        database.ScheduledRequest.find(matchQuery)
+            .skip(skipCount)
+            .limit(limitCount)
+            .populate("userId")
+            .populate("categoryId")
+            .sort({updated : -1, requestDate : -1})
+            .exec(function(err, results){
+                if(err){
+                    next(err);
+                }else{
+                    var scheduledRequests = [];
+                    async.series([
+                        function(callback){
+                            if (include) {
+                                var includingScheduledReq = _.find(results, function (sr) {
+                                    return sr._id.toString() == include.toString()
+                                });
+                                if (!includingScheduledReq) {
+                                    database.ScheduledRequest.findOne({_id: include}).populate("categoryId").populate("userId").exec(function (err, scheduledRequest) {
+                                        if (err || !scheduledRequest) {
+                                            callback();
+                                        } else {
+                                            results.splice(0, 0, scheduledRequest);
+                                            callback();
+                                        }
+                                    })
+                                } else {
+                                    callback();
+                                }
+                            }else{
+                                callback();
+                            }
+                        },
+                        function(callback){
+                            async.each(results, function(scheduledRequest, eachCb){
+                                var sr = scheduledRequest.toObject();
+                                async.series([function(cb){
+                                    database.User.findOne({_id : scheduledRequest.userId}).exec(function(err, userResult){
+                                        if(err){
+                                            cb(err);
+                                        }else{
+                                            sr.userName = userResult.name;
+                                            sr.userEmail = userResult.email;
+                                            sr.userPhoneNumber = userResult.phoneNumber;
+                                            sr.userPictureUri = userResult.profilePicture;
+                                            cb();
+                                        }
+                                    });
+                                },function(cb){
+                                    database.WatermarkPhotos.find({scheduledRequestId : scheduledRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                        if(err){
+                                            cb(err);
+                                        } else{
+                                            sr.watermarkPhotos = watermarkPhotos;
+                                            cb();
+                                        }
+                                    });
+                                },
+                                    function(cb){
+                                        database.EditedPhotos.find({scheduledRequestId : scheduledRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                            if(err){
+                                                cb(err);
+                                            } else{
+                                                sr.editedPhotos = editedPhotos;
+                                                cb();
+                                            }
+                                        });
+                                    },
+                                    function(cb){
+                                        database.Category.findOne({ _id : scheduledRequest.categoryId}).exec(function(err,categoryResult){
+                                            if(err){
+                                                cb(err);
+                                            }else{
+                                                sr.categoryName = categoryResult.name;
+                                                cb();
+                                            }
+                                        });
+                                    }], function(err){
+                                    if(err){
+                                        eachCb(err);
+                                    }else{
+                                        scheduledRequests.push(sr);
+                                        eachCb();
+                                    }
+                                });
+                            }, function(err){
+                                if(err){
+                                    callback(err);
+                                } else{
+                                    callback();
+                                }
+                            });
+                        }
+                    ], function(err){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(scheduledRequests))
+                        }
+                    })
                 }
             });
     }
@@ -1306,6 +1540,7 @@
                     if(response === false){
                         scheduledRequest.isAnswered = true;
                         scheduledRequest.accepted = false;
+                        scheduledRequest.rejectionDate = new Date();
                         var list = []
                         for (i = 0; i < scheduledRequest.hours; i++){
                             var d = new Date(scheduledRequest.sessionDate.getTime() + i*60*60*1000);

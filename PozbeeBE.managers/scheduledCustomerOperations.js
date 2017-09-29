@@ -73,7 +73,8 @@
                                         requestDate : new Date(),
                                         userId : userId,
                                         categoryId : categoryId,
-                                        sessionDate : new Date(date.getTime() - hoursFromGMT * 60 * 60 * 1000),
+                                        //sessionDate : date,
+                                        sessionDate : new Date(new Date().getTime() + 1 * 60 * 1000),
                                         location : {
                                             type : "Point",
                                             coordinates : location

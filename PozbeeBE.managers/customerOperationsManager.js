@@ -1,6 +1,7 @@
 (function(customerOperations){
     var database = require("../PozbeeBE.data/database");
     var operationResult = require("../PozbeeBE.helpers/operationResult");
+    var photographerOperationsManager = require("./photographerOperationsManager");
     var mongoose = require("mongoose");
     var _ = require("underscore");
     var async = require("async");
@@ -20,11 +21,11 @@
             },
             isOnline : true
         }).exec(function(err,photographers){
-           if(err){
-               next(err);
-           } else{
-               next(null, operationResult.createSuccesResult(photographers));
-           }
+            if(err){
+                next(err);
+            } else{
+                next(null, operationResult.createSuccesResult(photographers));
+            }
         });
     }
 
@@ -45,7 +46,7 @@
             },
             function(cb){
                 var time = new Date(new Date().getTime() + 4 * 60 * 60 * 1000);
-                database.ScheduledRequest.find({ $or : [ { isAnswered : true, accepted : true }, { isAnswered : false } ], sessionDate : { $gt : time }, userId : userId }).exec(function(err,result){
+                database.ScheduledRequest.find({ $or : [ { isAnswered : true, accepted : true }, { isAnswered : false } ], sessionDate : { $lt : time }, userId : userId , shootingFinished : false}).exec(function(err,result){
                     if(err || !result){
                         cb();
                     }else{
@@ -112,12 +113,12 @@
                         }
                     }
                 ).exec(function(err,photographerIds){
-                    if(err){
-                        cb(err);
-                    }else{
-                        cb(null, _.map(photographerIds, function(p){ return p.photographerRequests.photographerId }));
-                    }
-                })
+                        if(err){
+                            cb(err);
+                        }else{
+                            cb(null, _.map(photographerIds, function(p){ return p.photographerRequests.photographerId }));
+                        }
+                    })
             },
             function(excludingPhotographerIds, cb){
                 database.Photographer.find({
@@ -190,19 +191,19 @@
 
     customerOperations.checkInstantRequestStatus = function(instantRequestId, next){
         database.InstantRequest.findOne({_id : mongoose.Types.ObjectId(instantRequestId)}).exec(function(err,instantRequest){
-           if(err || !instantRequest){
-               next(err == null ? new Error("NoInstant") : err);
-           }else{
-               if(instantRequest.found){
-                   if(instantRequest.finished){
-                       next(null, operationResult.createSuccesResult(true));
-                   }else {
-                       next(null, operationResult.createSuccesResult(instantRequest));
-                   }
-               }else{
-                   next(null, operationResult.createSuccesResult(false));
-               }
-           }
+            if(err || !instantRequest){
+                next(err == null ? new Error("NoInstant") : err);
+            }else{
+                if(instantRequest.found){
+                    if(instantRequest.finished){
+                        next(null, operationResult.createSuccesResult(true));
+                    }else {
+                        next(null, operationResult.createSuccesResult(instantRequest));
+                    }
+                }else{
+                    next(null, operationResult.createSuccesResult(false));
+                }
+            }
         });
     }
 
@@ -263,48 +264,48 @@
         })
             .populate("categoryId")
             .exec(function(err,instantRequestResult){
-           if(err){
-               next(err);
-           } else{
-               var photographerRequest = _.find(instantRequestResult.photographerRequests, function(pr){ return pr.isTaken });
-               var photographerId = photographerRequest.photographerId;
+                if(err){
+                    next(err);
+                } else{
+                    var photographerRequest = _.find(instantRequestResult.photographerRequests, function(pr){ return pr.isTaken });
+                    var photographerId = photographerRequest.photographerId;
 
-               database.User.findOne({
-                   photographer : photographerId
-               })
-                   .populate("photographerApplications")
-                   .populate("photographer").exec(function(err,userResult){
-                   if(err){
-                       next(err);
-                   }else{
-                       if (!userResult){
-                           next(null, null);
-                       }else{
-                           var photographerName = userResult.name;
-                           var photographerNumber = userResult.phoneNumber;
-                           var photographerPhoto = userResult.profilePicture;
-                           var category = instantRequestResult.categoryId.name + "-" + (instantRequestResult.photographStyle == 1 ? "Indoor" : "Outdoor") ;
-                           var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
-                           var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
-                           var cameraModel = appliedApplication.cameraModel;
-                           var instantRequestIdStr = instantRequestId.toString();
-                           var photographerLocation = photographerRequest.currentLocation.coordinates;
+                    database.User.findOne({
+                        photographer : photographerId
+                    })
+                        .populate("photographerApplications")
+                        .populate("photographer").exec(function(err,userResult){
+                            if(err){
+                                next(err);
+                            }else{
+                                if (!userResult){
+                                    next(null, null);
+                                }else{
+                                    var photographerName = userResult.name;
+                                    var photographerNumber = userResult.phoneNumber;
+                                    var photographerPhoto = userResult.profilePicture;
+                                    var category = instantRequestResult.categoryId.name + "-" + (instantRequestResult.photographStyle == 1 ? "Indoor" : "Outdoor") ;
+                                    var appliedApplication = _.find(userResult.photographerApplications, function(pa){ return pa.isApproved });
+                                    var cameraPhoto = (appliedApplication.cameraPhotos && appliedApplication.cameraPhotos.length > 0) ? appliedApplication.cameraPhotos[0] : null;
+                                    var cameraModel = appliedApplication.cameraModel;
+                                    var instantRequestIdStr = instantRequestId.toString();
+                                    var photographerLocation = photographerRequest.currentLocation.coordinates;
 
-                           next(null, {
-                               "photographerName" : photographerName,
-                               "photographerNumber" : photographerNumber,
-                               "photographerPhoto" : photographerPhoto,
-                               "category" : category,
-                               "cameraPhoto" : cameraPhoto,
-                               "instantRequestId" : instantRequestIdStr,
-                               "photographerLocation" : photographerLocation,
-                               "cameraModel" : cameraModel
-                           });
-                       }
-                   }
-               })
-           }
-        });
+                                    next(null, {
+                                        "photographerName" : photographerName,
+                                        "photographerNumber" : photographerNumber,
+                                        "photographerPhoto" : photographerPhoto,
+                                        "category" : category,
+                                        "cameraPhoto" : cameraPhoto,
+                                        "instantRequestId" : instantRequestIdStr,
+                                        "photographerLocation" : photographerLocation,
+                                        "cameraModel" : cameraModel
+                                    });
+                                }
+                            }
+                        })
+                }
+            });
     }
 
     customerOperations.checkIfUserHasUnfinishedInstantRequest = function(userId, next){
@@ -314,27 +315,27 @@
                 {finished: false, finishedDate : null},
                 {found : true, finished : true, userConfirmed : false, cancelled : false}
             ]
-            }).exec(function(err,result){
-           if(err){
-               next(err);
-           } else{
-               if(result){
-                   if(result.found === true) {
-                       customerOperations.gatherInstantRequestInformationForCustomer(result._id, function (err, gatheredInfo) {
+        }).exec(function(err,result){
+            if(err){
+                next(err);
+            } else{
+                if(result){
+                    if(result.found === true) {
+                        customerOperations.gatherInstantRequestInformationForCustomer(result._id, function (err, gatheredInfo) {
                             var obj = result.toObject();
                             if(gatheredInfo){
 
                                 obj.foundPhotographerInformation = gatheredInfo;
                             }
                             next(null, operationResult.createSuccesResult(obj));
-                       });
-                   }else {
-                       next(null, operationResult.createSuccesResult(result));
-                   }
-               }else{
-                   next(null, operationResult.createSuccesResult());
-               }
-           }
+                        });
+                    }else {
+                        next(null, operationResult.createSuccesResult(result));
+                    }
+                }else{
+                    next(null, operationResult.createSuccesResult());
+                }
+            }
         });
     }
 
@@ -390,7 +391,7 @@
     customerOperations.setInstantRequestStarted = function(instantRequestId, next){
         database.InstantRequest.update(
             {
-            _id : instantRequestId
+                _id : instantRequestId
             },
             {
                 $set : {
@@ -398,13 +399,13 @@
                 }
             }
         ).exec(function(err,updateResult){
-               if(err){
-                   next(err);
-               } else{
-                if (updateResult != null && updateResult.nModified > 0){
-                    next(null);
+                if(err){
+                    next(err);
+                } else{
+                    if (updateResult != null && updateResult.nModified > 0){
+                        next(null);
+                    }
                 }
-               }
             });
     }
 
@@ -417,9 +418,9 @@
                 instantRequest.finished = true;
                 instantRequest.finishedDate = new Date();
                 instantRequest.save(function(err,saveResult){
-                   if(err){
+                    if(err){
 
-                   }
+                    }
                 });
             }
         });
@@ -438,12 +439,12 @@
                 finished : true,
                 finishedDate : new Date()
             }).exec(function(err,updateResult){
-            if(err){
-                next(err);
-            }else{
-                next(null)
-            }
-        })
+                if(err){
+                    next(err);
+                }else{
+                    next(null)
+                }
+            })
     }
 
     customerOperations.setPhotographerAsked = function(instantRequestId, photographerId, next){
@@ -509,29 +510,144 @@
 
     customerOperations.cancelInstantRequest = function(instantRequestId, next){
         database.InstantRequest.findOne({_id : instantRequestId}).exec(function(err,result){
+            if(err){
+                next(err);
+            }else if(result){
+                //if (result.found && result.found === true){
+                //    next(null, operationResult.createErrorResult());
+                //}else{
+                result.cancelled = true;
+                result.finished = true;
+                result.finishedDate = new Date();
+                var photographerIds = _.map(_.filter(result.photographerRequests, function(pr){ return (pr.askedDate != null) && (pr.askedDate != undefined) && pr.isAnswered == false }), function(pr){ return pr.photographerId });
+                var newPhotographerRequestsArray =  result.photographerRequests.filter(function(pr){
+                    return !pr.isAnswered
+                });
+
+                //result.photographerRequests = newPhotographerRequestsArray
+                result.save(function(err,saveResult){
+                    if(err){
+                        next(err);
+                    }else{
+                        next(null, photographerIds, operationResult.createSuccesResult());
+                    }
+                })
+                //}
+            }
+        });
+    }
+
+    customerOperations.cancelScheduledRequest = function(scheduledRequestId, next){
+        database.ScheduledRequest.findOneAndUpdate(
+            {
+                _id : scheduledRequestId
+            },
+            {
+                $set :
+                {
+                    cancelled : true,
+                    cancelledByPhotographer : false,
+                    shootingFinished : true,
+                    shootingFinishedDate : new Date()
+                }
+            },{
+                new : true
+            }).exec(function(err, result){
            if(err){
                next(err);
-           }else if(result){
-               //if (result.found && result.found === true){
-               //    next(null, operationResult.createErrorResult());
-               //}else{
-                   result.cancelled = true;
-                   result.finished = true;
-                   result.finishedDate = new Date();
-                   var photographerIds = _.map(_.filter(result.photographerRequests, function(pr){ return (pr.askedDate != null) && (pr.askedDate != undefined) && pr.isAnswered == false }), function(pr){ return pr.photographerId });
-                   var newPhotographerRequestsArray =  result.photographerRequests.filter(function(pr){
-                      return !pr.isAnswered
-                   });
+           } else{
+               var jobs = _.filter(global.scheduledRequestCrons, function(src){
+                   return src.scheduleId == scheduledRequestId.toString();
+               });
+               _.each(jobs, function(src){
+                   src.cronJob.stop();
+               });
 
-                   //result.photographerRequests = newPhotographerRequestsArray
-                   result.save(function(err,saveResult){
-                       if(err){
-                           next(err);
-                       }else{
-                           next(null, photographerIds, operationResult.createSuccesResult());
-                       }
-                   })
-               //}
+               for(i = 0; i < jobs.length; i ++ ){
+                   var index = _.findIndex(global.scheduledRequestCrons, function (c) {
+                       return c.scheduleId == scheduledRequestId.toString()
+                   });
+                   if (index != -1){
+                       global.scheduledRequestCrons.splice(index, 1);
+                   }
+               }
+
+               var list = []
+               for (i = 0; i < result.hours; i++){
+                   var d = new Date(result.sessionDate.getTime() + i*60*60*1000);
+                   var x = new Date(JSON.parse(JSON.stringify(d)));
+                   x.setUTCHours(0);
+                   var index = _.findIndex(list, function(d){
+                       return d.day.toDateString() == x.toDateString()
+                   });
+                   if (index == -1){
+                       list.push({ day : x, hours : [d.getUTCHours()] });
+                   }else{
+                       list[index].hours.push(d.getUTCHours())
+                   }
+               }
+                if(list.length > 0) {
+                    async.each(list, function (d, eachCb) {
+                        var day = d.day;
+                        var hours = d.hours;
+                        database.PhotographerUnavailability.findOne({
+                            photographerId: result.photographerId,
+                            day: day
+                        }).exec(function (err, unavailability) {
+                            if (err || !unavailability) {
+                                eachCb(err);
+                            } else {
+                                for (i = 0; i < hours.length; i++) {
+                                    var h = hours[i];
+                                    var index = unavailability.hours.findIndex(function (hour) {
+                                        return hour == h;
+                                    });
+                                    if (index != -1) {
+                                        unavailability.hours.splice(index, 1);
+                                    }
+                                }
+                                if (unavailability.hours.length == 0) {
+                                    unavailability.remove(function (err, removeRes) {
+                                        if (err) {
+                                            eachCb(err);
+                                        } else {
+                                            eachCb();
+                                        }
+                                    })
+                                } else {
+                                    unavailability.save(function (err, updateResult) {
+                                        if (err) {
+                                            eachCb(err);
+                                        } else {
+                                            eachCb();
+                                        }
+                                    });
+                                }
+
+                            }
+                        });
+                    }, function (err) {
+                        if (err) {
+                            next(err);
+                        } else {
+                            photographerOperationsManager.getPhotographerUserId(result.photographerId, function (err, userId) {
+                                if (err) {
+                                    next(null, operationResult.createSuccesResult());
+                                } else {
+                                    next(null, operationResult.createSuccesResult(), userId);
+                                }
+                            });
+                        }
+                    });
+                }else {
+                    photographerOperationsManager.getPhotographerUserId(result.photographerId, function (err, userId) {
+                        if (err) {
+                            next(null, operationResult.createSuccesResult());
+                        } else {
+                            next(null, operationResult.createSuccesResult(), userId);
+                        }
+                    });
+                }
            }
         });
     }
@@ -561,25 +677,148 @@
                     },{
                         new : true
                     }).exec(function(err,instantRequest){
-                       if(err){
-                           database.WatermarkPhotos.update({
-                               _id : {
-                                   $in : watermarkPhotoIds
-                               }
-                           },{
-                               $set : {
-                                   isChoosed : false
-                               }
-                           },{"multi" : true}).exec();
-                           next(err);
-                       }else{
-                           next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}), instantRequest);
-                       }
+                        if(err){
+                            database.WatermarkPhotos.update({
+                                _id : {
+                                    $in : watermarkPhotoIds
+                                }
+                            },{
+                                $set : {
+                                    isChoosed : false
+                                }
+                            },{"multi" : true}).exec();
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}), instantRequest);
+                        }
                     });
 
                 }
             }
         })
+    }
+
+    customerOperations.getUsersScheduledRequestsHistory = function(userId, skipCount, limitCount, include, exclude, next){
+        var matchQuery;
+        if (exclude) {
+            matchQuery = {
+                "userId" : userId,
+                "_id" : {
+                    $nin : [exclude]
+                }
+            }
+        }else{
+            matchQuery = {
+                "userId" : userId
+            }
+        }
+
+        database.ScheduledRequest.find(matchQuery)
+            .skip(skipCount)
+            .limit(limitCount)
+            .sort({updated : -1, requestDate : -1})
+            .exec(function(err, results){
+                if(err){
+                    next(err);
+                }else{
+                    var scheduledRequests = [];
+                    async.series([
+                        function(callback){
+                            if (include) {
+                                var includingScheduledReq = _.find(results, function (sr) {
+                                    return sr._id.toString() == include.toString()
+                                });
+                                if (!includingScheduledReq) {
+                                    database.ScheduledRequest.findOne({_id: include}).populate("categoryId").populate("userId").exec(function (err, scheduledRequest) {
+                                        if (err || !scheduledRequest) {
+                                            callback();
+                                        } else {
+                                            results.splice(0, 0, scheduledRequest);
+                                            callback();
+                                        }
+                                    })
+                                } else {
+                                    callback();
+                                }
+                            }else{
+                                callback();
+                            }
+                        },
+                        function(callback){
+                            async.each(results, function(scheduledRequest, eachCb){
+                                var sr = scheduledRequest.toObject();
+                                async.series([function(cb){
+                                    photographerOperationsManager.getPhotographerUserId(scheduledRequest.photographerId, function(err, photographerUserId){
+                                      if(err){
+                                          cb(err);
+                                      }  else{
+                                          database.User.findOne({_id : scheduledRequest.userId}).exec(function(err, userResult){
+                                              if(err){
+                                                  cb(err);
+                                              }else{
+                                                  sr.userName = userResult.name;
+                                                  sr.userEmail = userResult.email;
+                                                  sr.userPhoneNumber = userResult.phoneNumber;
+                                                  sr.userPictureUri = userResult.profilePicture;
+                                                  cb();
+                                              }
+                                          });
+                                      }
+                                    });
+                                    },function(cb){
+                                        database.WatermarkPhotos.find({scheduledRequestId : scheduledRequest._id},{path : 1, isChoosed : true}).exec(function(err, watermarkPhotos){
+                                            if(err){
+                                                cb(err);
+                                            } else{
+                                                sr.watermarkPhotos = watermarkPhotos;
+                                                cb();
+                                            }
+                                        });
+                                    },
+                                    function(cb){
+                                        database.EditedPhotos.find({scheduledRequestId : scheduledRequest._id},{path : 1}).exec(function(err, editedPhotos){
+                                            if(err){
+                                                cb(err);
+                                            } else{
+                                                sr.editedPhotos = editedPhotos;
+                                                cb();
+                                            }
+                                        });
+                                    },
+                                    function(cb){
+                                        database.Category.findOne({ _id : scheduledRequest.categoryId}).exec(function(err,categoryResult){
+                                            if(err){
+                                                cb(err);
+                                            }else{
+                                                sr.categoryName = categoryResult.name;
+                                                cb();
+                                            }
+                                        });
+                                    }], function(err){
+                                    if(err){
+                                        eachCb(err);
+                                    }else{
+                                        scheduledRequests.push(sr);
+                                        eachCb();
+                                    }
+                                });
+                            }, function(err){
+                               if(err){
+                                   callback(err);
+                               } else{
+                                   callback();
+                               }
+                            });
+                        }
+                    ], function(err){
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(scheduledRequests))
+                        }
+                    })
+                }
+            });
     }
 
     customerOperations.getUsersInstantRequestsHistory = function(userId, skipCount, limitCount, include, exclude, next){
@@ -769,11 +1008,11 @@
                             });
                         }
                     ], function(err){
-                       if(err){
-                           next(err);
-                       }else{
-                           next(null, operationResult.createSuccesResult(instantRequests));
-                       }
+                        if(err){
+                            next(err);
+                        }else{
+                            next(null, operationResult.createSuccesResult(instantRequests));
+                        }
                     });
 
 
@@ -892,16 +1131,16 @@
         excludingInstantRequestIds = excludingInstantRequestIds == null ? [] : excludingInstantRequestIds;
         database.InstantRequest.aggregate(
             {$match :
+            {
+                _id :
                 {
-                    _id :
-                    {
-                        $nin : excludingInstantRequestIds
-                    },
-                    photographerRequests :
-                    {
-                        $elemMatch :{ photographerId : {$in : photographerIds} }
-                    }
+                    $nin : excludingInstantRequestIds
+                },
+                photographerRequests :
+                {
+                    $elemMatch :{ photographerId : {$in : photographerIds} }
                 }
+            }
             },
             {
                 $unwind : "$photographerRequests"
@@ -916,15 +1155,15 @@
                 $limit : 10
             },
             {$group :
+            {
+                _id :
                 {
-                    _id :
-                    {
-                        photographerId : "$photographerRequests.photographerId",
-                        taken : "$photographerRequests.isTaken",
-                        answered : "$photographerRequests.isAnswered"
-                    },
-                    count : {$sum : 1}
-                }
+                    photographerId : "$photographerRequests.photographerId",
+                    taken : "$photographerRequests.isTaken",
+                    answered : "$photographerRequests.isAnswered"
+                },
+                count : {$sum : 1}
+            }
             }).exec(function(err,resultArray){
                 if(err){
                     next(null);

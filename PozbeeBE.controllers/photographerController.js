@@ -132,6 +132,19 @@
             })
         });
 
+        router.get("/photographerCancelScheduledRequest/:scheduledRequestId", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var scheduledRequestId = mongoose.Types.ObjectId(req.params.scheduledRequestId);
+            photographerOperationsManager.cancelScheduledRequest(scheduledRequestId , function(err, result, userId){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    photographerController.io.of("customer").to(userId.toString()).emit("scheduledRequestCancelled", scheduledRequestId.toString());
+                    photographerController.iosNotification.sendNotification(userId,"Photographer cancelled the scheduled request.", {type : global.NotificationEnum.RequestCancelled});
+                    res.status(200).send(result);
+                }
+            })
+        });
+
         router.get("/checkIfPhotographerHasActiveInstantRequest/:photographerId", passport.authenticate("bearer",{session : false}), function(req,res,next){
             var photographerId = mongoose.Types.ObjectId(req.params.photographerId);
             photographerOperationsManager.checkIfPhotographerHasActiveInstantRequest(photographerId, function(err,result){
@@ -203,6 +216,21 @@
                     res.status(200).send(result);
                 }
             });
+        });
+
+        router.get("/getPhotographerScheduledRequestsHistory", passport.authenticate("bearer", {session : false}), function(req,res,next){
+            var photographerId = mongoose.Types.ObjectId(req.query.photographerId);
+            var skipCount = Number(req.query.skip);
+            var limitCount = Number(req.query.limit);
+            var include = req.query.include == "" ? null : mongoose.Types.ObjectId(req.query.include);
+            var exclude = req.query.exclude == "" ? null : mongoose.Types.ObjectId(req.query.exclude);
+            photographerOperationsManager.getScheduledRequestsHistory(photographerId, skipCount, limitCount, include, exclude, function(err,result){
+                if(err){
+                    res.status(444).send(err);
+                }else{
+                    res.status(200).send(result);
+                }
+            })
         });
 
         router.get("/getPhotographerInstantRequestsHistory", passport.authenticate("bearer", {session : false}), function(req,res,next){

@@ -73,7 +73,7 @@
                                 var now = new Date();
                                 var dayBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 24 * 60 * 60 * 1000);
                                 var hourBeforeJob = new Date(scheduledRequest.sessionDate.getTime() - 60 * 60 * 1000);
-                                var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() + 60 * 1000);
+                                var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() + 24 * 60 * 60 * 1000);
                                 var CronJob = require('cron').CronJob;
                                 if (now < dayBeforeJob) {
                                     var job = new CronJob(dayBeforeJob, function () {
@@ -209,7 +209,7 @@
                             var dayBeforeSession = new Date(scheduledRequest.sessionDate.getTime() - 24 * 60 * 60 * 1000);
                             var hourBeforeSession = new Date(scheduledRequest.sessionDate.getTime() - 60 * 60 * 1000);
                             var now = new Date();
-                            var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() +  60 * 1000 );
+                            var remainingResponseTime = new Date(scheduledRequest.requestDate.getTime() + 24 * 60 * 60 * 1000 );
                             var CronJob = require('cron').CronJob;
 
                             if (dayBeforeSession > now){
