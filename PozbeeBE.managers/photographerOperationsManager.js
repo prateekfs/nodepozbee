@@ -780,12 +780,15 @@
         }
     }
 
-    photographerOperationsManager.uploadInitialPhotosOfInstantRequest = function(instantRequestId, photos, next){
+    photographerOperationsManager.uploadInitialPhotosOfRequest = function(requestId, isInstant, photos, next){
         var initialPhotoPaths = _.map(photos, function(photo){ return photo.path});
         var watermarkPhotosList = [];
+        var instantRequestId = isInstant ? requestId : null;
+        var scheduledRequestId = !isInstant ? requestId : null;
         async.each(initialPhotoPaths, function(path, cb){
                 var watermarkPhotos = new database.WatermarkPhotos({
                     instantRequestId : instantRequestId,
+                    scheduledRequestId : scheduledRequestId,
                     path : path
                 });
                 watermarkPhotos.save(function(err,result){
@@ -804,38 +807,67 @@
                 if(err){
                     next(err);
                 }else{
-                    database.InstantRequest.findOneAndUpdate(
-                        {
-                            _id : instantRequestId
-                        } ,
-                        {
-                            $set :
+                    if (isInstant){
+                        database.InstantRequest.findOneAndUpdate(
                             {
-                                nonEditedPhotosAdded : true,
-                                nonEditedPhotosAddedDate : new Date(),
-                                updated : new Date()
-                            }
-                        },{
-                            new : true
-                        })
-                        .exec(function(err,instantRequest){
-                            if(err){
-                                next(err);
-                            }else{
-                                next(null,operationResult.createSuccesResult(watermarkPhotosList),instantRequest);
-                            }
-                        });
+                                _id : instantRequestId
+                            } ,
+                            {
+                                $set :
+                                {
+                                    nonEditedPhotosAdded : true,
+                                    nonEditedPhotosAddedDate : new Date(),
+                                    updated : new Date()
+                                }
+                            },{
+                                new : true
+                            })
+                            .exec(function(err,instantRequest){
+                                if(err){
+                                    next(err);
+                                }else{
+                                    next(null,operationResult.createSuccesResult(watermarkPhotosList),instantRequest);
+                                }
+                            });
+
+                    }else{
+                        database.ScheduledRequest.findOneAndUpdate(
+                            {
+                                _id : scheduledRequestId
+                            } ,
+                            {
+                                $set :
+                                {
+                                    nonEditedPhotosAdded : true,
+                                    nonEditedPhotosAddedDate : new Date(),
+                                    updated : new Date()
+                                }
+                            },{
+                                new : true
+                            })
+                            .exec(function(err,scheduledRequest){
+                                if(err){
+                                    next(err);
+                                }else{
+                                    next(null,operationResult.createSuccesResult(watermarkPhotosList),scheduledRequest);
+                                }
+                            });
+
+                    }
 
                 }
             });
     }
 
-    photographerOperationsManager.uploadEditedPhotosOfInstantRequest = function(instantRequestId, photos, next){
+    photographerOperationsManager.uploadEditedPhotosOfRequest = function(requestId, isInstant, photos, next){
         var initialPhotoPaths = _.map(photos, function(photo){ return photo.path});
         var editedPhotoList = [];
+        var instantRequestId = isInstant ? requestId : null;
+        var scheduledRequestId = !isInstant ? requestId : null;
         async.each(initialPhotoPaths, function(path, cb){
                 var editedPhoto = new database.EditedPhotos({
                     instantRequestId : instantRequestId,
+                    scheduledRequestId : scheduledRequestId,
                     path : path
                 });
                 editedPhoto .save(function(err,result){
@@ -854,29 +886,56 @@
                 if(err){
                     next(err);
                 }else{
-                    database.InstantRequest.findOneAndUpdate(
-                        {
-                            _id : instantRequestId
-                        } ,
-                        {
-                            $set :
+                    if (isInstant){
+                        database.InstantRequest.findOneAndUpdate(
                             {
-                                editedPhotosAdded : true,
-                                editedPhotosAddedDate : new Date(),
-                                updated : new Date()
-                            }
-                        },
-                        {
-                            new : true,
-                            runValidators : true
-                        })
-                        .exec(function(err,instantRequest){
-                            if(err){
-                                next(err);
-                            }else{
-                                next(null,operationResult.createSuccesResult(editedPhotoList), instantRequest);
-                            }
-                        });
+                                _id : instantRequestId
+                            } ,
+                            {
+                                $set :
+                                {
+                                    editedPhotosAdded : true,
+                                    editedPhotosAddedDate : new Date(),
+                                    updated : new Date()
+                                }
+                            },
+                            {
+                                new : true,
+                                runValidators : true
+                            })
+                            .exec(function(err,instantRequest){
+                                if(err){
+                                    next(err);
+                                }else{
+                                    next(null,operationResult.createSuccesResult(editedPhotoList), instantRequest);
+                                }
+                            });
+                    }else{
+                        database.ScheduledRequest.findOneAndUpdate(
+                            {
+                                _id : scheduledRequestId
+                            } ,
+                            {
+                                $set :
+                                {
+                                    editedPhotosAdded : true,
+                                    editedPhotosAddedDate : new Date(),
+                                    updated : new Date()
+                                }
+                            },
+                            {
+                                new : true,
+                                runValidators : true
+                            })
+                            .exec(function(err,scheduledRequest){
+                                if(err){
+                                    next(err);
+                                }else{
+                                    next(null,operationResult.createSuccesResult(editedPhotoList), scheduledRequest);
+                                }
+                            });
+                    }
+
 
                 }
             });

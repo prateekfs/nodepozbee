@@ -652,7 +652,9 @@
         });
     }
 
-    customerOperations.setSelectedWatermarkPhotos = function(instantRequestId, watermarkPhotoIds, next){
+    customerOperations.setSelectedWatermarkPhotos = function(requestId, isInstant, watermarkPhotoIds, next){
+        var instantRequestId = isInstant ? requestId : null;
+        var scheduledRequestId = !isInstant ? requestId : null;
         database.WatermarkPhotos.update({
             _id : {
                 $in : watermarkPhotoIds
@@ -666,32 +668,62 @@
                 next(err);
             }else{
                 if (result.nModified > 0){
-                    database.InstantRequest.findOneAndUpdate({
-                        _id : instantRequestId
-                    },{
-                        $set : {
-                            userChoosed : true,
-                            userChoosedDate : new Date(),
-                            updated : new Date()
-                        }
-                    },{
-                        new : true
-                    }).exec(function(err,instantRequest){
-                        if(err){
-                            database.WatermarkPhotos.update({
-                                _id : {
-                                    $in : watermarkPhotoIds
-                                }
-                            },{
-                                $set : {
-                                    isChoosed : false
-                                }
-                            },{"multi" : true}).exec();
-                            next(err);
-                        }else{
-                            next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}), instantRequest);
-                        }
-                    });
+                    if (isInstant){
+                        database.InstantRequest.findOneAndUpdate({
+                            _id : instantRequestId
+                        },{
+                            $set : {
+                                userChoosed : true,
+                                userChoosedDate : new Date(),
+                                updated : new Date()
+                            }
+                        },{
+                            new : true
+                        }).exec(function(err,instantRequest){
+                            if(err){
+                                database.WatermarkPhotos.update({
+                                    _id : {
+                                        $in : watermarkPhotoIds
+                                    }
+                                },{
+                                    $set : {
+                                        isChoosed : false
+                                    }
+                                },{"multi" : true}).exec();
+                                next(err);
+                            }else{
+                                next(null, operationResult.createSuccesResult({userChoosedDate : instantRequest.userChoosedDate}), instantRequest);
+                            }
+                        });
+                    }else{
+                        database.ScheduledRequest.findOneAndUpdate({
+                            _id : scheduledRequestId
+                        },{
+                            $set : {
+                                userChoosed : true,
+                                userChoosedDate : new Date(),
+                                updated : new Date()
+                            }
+                        },{
+                            new : true
+                        }).exec(function(err,scheduledRequest){
+                            if(err){
+                                database.WatermarkPhotos.update({
+                                    _id : {
+                                        $in : watermarkPhotoIds
+                                    }
+                                },{
+                                    $set : {
+                                        isChoosed : false
+                                    }
+                                },{"multi" : true}).exec();
+                                next(err);
+                            }else{
+                                next(null, operationResult.createSuccesResult({userChoosedDate : scheduledRequest.userChoosedDate}), scheduledRequest);
+                            }
+                        });
+                    }
+
 
                 }
             }

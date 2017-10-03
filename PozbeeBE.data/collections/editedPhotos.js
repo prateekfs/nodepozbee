@@ -6,6 +6,10 @@
                 type : Schema.Types.ObjectId,
                 ref : "InstantRequest"
             },
+            scheduledRequestId : {
+                type : Schema.Types.ObjectId,
+                ref : "ScheduledRequest"
+            },
             uploadDate : {
                 type : Date,
                 required : true

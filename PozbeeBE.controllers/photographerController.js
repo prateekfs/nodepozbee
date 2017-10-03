@@ -261,14 +261,15 @@
 
         var cpUpload = upload.fields([{ name: 'initialPhotos', mimeType : "jpeg"}]);
         router.post("/uploadInitialPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
+            var requestId = mongoose.Types.ObjectId(req.body.requestId);
+            var isInstant = req.body.isInstant == "1" ? true : false;
             var photos = req.files.initialPhotos;
-            photographerOperationsManager.uploadInitialPhotosOfInstantRequest(instantRequestId,photos, function(err, result, instantRequest){
+            photographerOperationsManager.uploadInitialPhotosOfRequest(requestId, isInstant, photos, function(err, result, request){
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                    photographerController.iosNotification.sendNotification(instantRequest.userId,'Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '. Select photos you like to be retouched.',{type : global.NotificationEnum.NonEditedPhotosAdded, id : instantRequest._id.toString()})
+                    var d = global.getLocalTimeByLocation(request.location.coordinates, request.finishedDate);
+                    photographerController.iosNotification.sendNotification(request.userId,'Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '. Select photos you like to be retouched.',{type : global.NotificationEnum.NonEditedPhotosAdded, id : request._id.toString()})
                     res.status(200).send(result);
                 }
             });
@@ -276,14 +277,15 @@
 
         var cpUpload = editedUpload.fields([{ name: 'editedPhotos', mimeType : "jpeg"}]);
         router.post("/uploadEditedPhotos", cpUpload, passport.authenticate("bearer",{session : false}) , function(req,res,next){
-            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
+            var requestId = mongoose.Types.ObjectId(req.body.requestId);
+            var isInstant = req.body.isInstant == "1" ? true : false;
             var photos = req.files.editedPhotos;
-            photographerOperationsManager.uploadEditedPhotosOfInstantRequest(instantRequestId,photos, function(err, result, instantRequest){
+            photographerOperationsManager.uploadEditedPhotosOfRequest(requestId, isInstant, photos, function(err, result, request){
                 if(err){
                     res.status(444).send(err);
                 }else{
-                    var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                        photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : instantRequest._id.toString()})
+                    var d = global.getLocalTimeByLocation(request.location.coordinates, request.finishedDate);
+                        photographerController.iosNotification.sendNotification(instantRequest.userId,'Retouched Photos have uploaded for your Instant Photo Shooting which had finished on ' + d.dateStr + '.',{type : global.NotificationEnum.EditedPhotosAdded, id : request._id.toString()})
                     res.status(200).send(result);
                 }
             });

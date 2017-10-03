@@ -104,7 +104,7 @@
         })
     };
 
-    scheduledCustomerOperations.getPhotographersToSchedule = function(userId, date, hours, categoryId, location, next){
+    scheduledCustomerOperations.getPhotographersToSchedule = function(userId, date, hours, categoryId, location, lowestPrice, highestPrice, leastPhotoCount, next){
         var d = new Date(date);
         d.setUTCHours(0,0,0);
         var requestLocalDate = global.getLocalTimeByLocation(location, new Date(date)).date;
@@ -115,6 +115,7 @@
                     {
                         userId : userId,
                         sessionDate : { $gt : now },
+                        cancelled : false,
                         $or :
                             [
                                 { isAnswered : false },
@@ -159,7 +160,10 @@
                     },
                     pricing : {
                         "$elemMatch" : {
-                            categoryId : categoryId
+                            categoryId : categoryId,
+                            price : { $lte : highestPrice},
+                            price : { $gte : lowestPrice },
+                            leastPhotoCount : { $gte : leastPhotoCount }
                         }
                     }
                 }).exec(function(err,result){

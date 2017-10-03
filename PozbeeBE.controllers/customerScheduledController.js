@@ -28,7 +28,10 @@
             var categoryId = mongoose.Types.ObjectId(req.query.categoryId);
             var location = _.map(req.query.location, function(a) { return Number(a) });
             var hours = Number(req.query.hours);
-            scheduledCustomerOperations.getPhotographersToSchedule(userId, date, hours, categoryId, location, function(err, result){
+            var lowestPrice = req.query.lowestPrice != null ? Number(req.query.lowestPrice) : 0;
+            var highestPrice =  req.query.highestPrice != null ? Number(req.query.highestPrice) : Infinity;
+            var leastPhotoCount = req.query.leastPhotoCount != null ? Number(req.query.leastPhotoCount) : 0;
+            scheduledCustomerOperations.getPhotographersToSchedule(userId, date, hours, categoryId, location, lowestPrice, highestPrice, leastPhotoCount, function(err, result){
                 if(err){
                     res.status(444).send(err);
                 }else{

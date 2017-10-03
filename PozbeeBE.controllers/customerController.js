@@ -204,22 +204,38 @@
 
         router.post("/setSelectedWatermarkPhotos", passport.authenticate("bearer",{session : false}), function(req,res,next){
             var selectedPhotoIds = req.body.selectedWatermarkedPhotos;
-            var instantRequestId = mongoose.Types.ObjectId(req.body.instantRequestId);
-            customerOperations.setSelectedWatermarkPhotos(instantRequestId, selectedPhotoIds, function(err,result, instantRequest){
+            var isInstant = req.body.isInstant;
+            var requestId = mongoose.Types.ObjectId(req.body.requestId);
+
+            customerOperations.setSelectedWatermarkPhotos(requestId, isInstant, selectedPhotoIds, function(err,result, request){
                if(err){
                    res.status(444).send(err);
                } else{
-                   var takenPhotographer = _.find(instantRequest.photographerRequests, function(req) { return req.isTaken === true; });
-                   photographerOperations.getPhotographerUserId(takenPhotographer.photographerId, function(err,userId){
-                       if(!err) {
+                   if (isInstant) {
+                       var takenPhotographer = _.find(request.photographerRequests, function (req) {
+                           return req.isTaken === true;
+                       });
+                       photographerOperations.getPhotographerUserId(takenPhotographer.photographerId, function (err, userId) {
+                           if (!err) {
 
-                           var d = global.getLocalTimeByLocation(instantRequest.location.coordinates, instantRequest.finishedDate);
-                           customerController.iosNotification.sendNotification(userId, 'Your customer from the Instant Photo Shooting from ' + d.dateStr + ' has selected photos. Check it now.', {
-                               type: global.NotificationEnum.PhotographsSelected,
-                               id: instantRequest._id.toString()
-                           })
-                       }
-                   });
+                               var d = global.getLocalTimeByLocation(request.location.coordinates, request.finishedDate);
+                               customerController.iosNotification.sendNotification(userId, 'Your customer from the Instant Photo Shooting from ' + d.dateStr + ' has selected photos. Check it now.', {
+                                   type: global.NotificationEnum.PhotographsSelected,
+                                   id: request._id.toString()
+                               })
+                           }
+                       });
+                   }else{
+                       photographerOperations.getPhotographerUserId(request.photographerId, function (err, userId) {
+                           if (!err) {
+                               var d = global.getLocalTimeByLocation(request.location.coordinates, request.finishedDate);
+                               customerController.iosNotification.sendNotification(userId, 'Your customer from the Scheduled Photo Shooting from ' + d.dateStr + ' has selected photos. Check it now.', {
+                                   type: global.NotificationEnum.PhotographsSelected,
+                                   id: request._id.toString()
+                               })
+                           }
+                       });
+                   }
 
                    res.status(200).send(result);
                }
